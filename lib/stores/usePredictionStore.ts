@@ -15,12 +15,20 @@ export const usePredictionStore = create<PredictionStore>((set, get) => ({
   predictions,
   countryFilter: null,
   categoryFilter: null,
-  setCountryFilter: (country) => set({ countryFilter: country }),
+  setCountryFilter: (country) => {
+    const normalized = country ?? null;
+    if (get().countryFilter === normalized) return;
+    set({ countryFilter: normalized });
+  },
   setCategoryFilter: (category) => {
     const normalized = category && categories.includes(category as any) ? category : null;
+    if (get().categoryFilter === normalized) return;
     set({ categoryFilter: normalized });
   },
-  clearFilters: () => set({ countryFilter: null, categoryFilter: null }),
+  clearFilters: () => {
+    if (!get().countryFilter && !get().categoryFilter) return;
+    set({ countryFilter: null, categoryFilter: null });
+  },
   getFiltered: (country, category) => {
     const state = get();
     const countryValue = country ?? state.countryFilter;
@@ -37,4 +45,3 @@ export const usePredictionStore = create<PredictionStore>((set, get) => ({
     });
   },
 }));
-
