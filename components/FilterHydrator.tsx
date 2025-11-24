@@ -9,10 +9,8 @@ type Props = {
 };
 
 export default function FilterHydrator({ country = null, category = null }: Props) {
-  const { setCountryFilter, setCategoryFilter } = usePredictionStore((state) => ({
-    setCountryFilter: state.setCountryFilter,
-    setCategoryFilter: state.setCategoryFilter,
-  }));
+  const setCountryFilter = usePredictionStore((state) => state.setCountryFilter);
+  const setCategoryFilter = usePredictionStore((state) => state.setCategoryFilter);
 
   useEffect(() => {
     setCountryFilter(country);
