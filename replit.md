@@ -70,16 +70,41 @@ All data is currently mocked in `data/predictions.ts` for demonstration purposes
 Optional:
 - `NEXT_PUBLIC_WALLETCONNECT_ID` - WalletConnect project ID (defaults to "demo" if not set)
 
-## Next Steps / Future Enhancements
-- [ ] Connect on-chain data feeds for real-time prices and liquidity
-- [ ] Implement prediction resolution oracle
-- [ ] Add smart contract interactions for actual trading
-- [ ] Build analytics dashboards per country/category
-- [ ] Integrate real market maker and liquidity pools
-- [ ] Add user authentication and portfolio tracking
+## Backend Development Roadmap
+The Technical Architecture Document contains complete specifications for building the production backend:
+
+### Phase 1: Core Backend (Weeks 3-6)
+- [ ] NestJS API scaffold with SIWE authentication
+- [ ] User management and session handling
+- [ ] Market CRUD APIs (migrate from mock data)
+- [ ] Basic wallet deposit/withdrawal APIs
+
+### Phase 2: Trading Engine (Weeks 7-10)
+- [ ] Order matching engine with price-time priority
+- [ ] Order book management (Redis)
+- [ ] AMM integration for instant trades
+- [ ] Real-time WebSocket events
+
+### Phase 3: Smart Contracts (Weeks 11-14)
+- [ ] MarketFactory, OutcomeAMM, CollateralVault contracts
+- [ ] Testnet deployment and integration
+- [ ] Security audit
+
+### Phase 4: Oracle & Resolution (Weeks 15-17)
+- [ ] Oracle service with Chainlink integration
+- [ ] Dispute resolution system
+- [ ] Settlement and claims processing
+
+### Phase 5: Analytics & Admin (Weeks 18-20)
+- [ ] Analytics data pipeline
+- [ ] Admin dashboard
+- [ ] Leaderboards and reporting
 
 ## Documentation
-- **Technical Architecture Document:** `docs/TECHNICAL_ARCHITECTURE_DOCUMENT.md` - Comprehensive technical reference covering system architecture, component specifications, state management, Web3 integration, and future roadmap.
+- **Technical Architecture Document:** `docs/TECHNICAL_ARCHITECTURE_DOCUMENT.md`
+  - Part I: Frontend Architecture (Implemented) - Sections 1-13
+  - Part II: Backend Architecture (Planning) - Sections 14-26
+  - Includes: API specifications, database schemas, trading engine design, smart contract interfaces, oracle system, real-time infrastructure, admin functions, and implementation roadmap
 
 ## Notes
 - This is a frontend showcase/demo application
