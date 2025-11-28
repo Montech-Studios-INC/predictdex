@@ -27,13 +27,17 @@
 ### Part II: Backend Architecture (Planning)
 14. [Backend System Overview](#14-backend-system-overview)
 15. [API Specifications](#15-api-specifications)
+    - 15.7 User Profile Endpoints
+    - 15.8 Notification Endpoints
 16. [Database Architecture](#16-database-architecture)
+    - User Risk Settings & Notification Tables
 17. [Authentication & Authorization](#17-authentication--authorization)
 18. [Trading Engine](#18-trading-engine)
 19. [Liquidity Management](#19-liquidity-management)
 20. [Oracle & Resolution System](#20-oracle--resolution-system)
 21. [Smart Contract Architecture](#21-smart-contract-architecture)
 22. [Real-Time Infrastructure](#22-real-time-infrastructure)
+    - 22.5 Rate Limiting & Operational Safeguards
 23. [Analytics & Reporting](#23-analytics--reporting)
 24. [Admin & Operations](#24-admin--operations)
 25. [Implementation Roadmap](#25-implementation-roadmap)
@@ -1396,17 +1400,35 @@ GET /api/v1/markets
           "id": "uuid",
           "slug": "nigeria-election-2027",
           "title": "Will APC win Nigeria 2027 election?",
-          "description": "...",
+          "description": "Traders are pricing whether APC will win...",
           "category": "politics",
           "country": "Nigeria",
           "status": "active",
+          
+          # Pricing (matches frontend yesPrice/noPrice)
+          "yesPrice": 0.63,
+          "noPrice": 0.37,
+          
+          # Outcomes with detailed breakdown
           "outcomes": [
             { "id": "yes", "name": "Yes", "price": 0.63, "shares": 42000 },
             { "id": "no", "name": "No", "price": 0.37, "shares": 28000 }
           ],
-          "liquidity": 125000,
+          
+          # Liquidity (matches frontend liquidity: "Low" | "Medium" | "High")
+          "liquidityTier": "High",
+          "liquidityAmount": 125000,
+          
+          # Volume metrics
+          "volume": 450000,
           "volume24h": 15000,
-          "volumeTotal": 450000,
+          
+          # Timeline & Sources (from frontend Prediction type)
+          "timeline": "General election window closes December 2027.",
+          "source": "https://www.reuters.com",
+          "sentiment": 62,
+          
+          # Dates
           "createdAt": "2025-01-15T10:00:00Z",
           "expiresAt": "2027-02-28T23:59:59Z",
           "resolvedAt": null,
@@ -1425,7 +1447,27 @@ GET /api/v1/markets/:slug
   Description: Get single market details
   Response:
     {
-      "market": { ... },
+      "market": {
+        "id": "uuid",
+        "slug": "nigeria-election-2027",
+        "title": "Will APC win Nigeria 2027 election?",
+        "description": "Traders are pricing whether APC will win...",
+        "category": "politics",
+        "country": "Nigeria",
+        "status": "active",
+        "yesPrice": 0.63,
+        "noPrice": 0.37,
+        "outcomes": [...],
+        "liquidityTier": "High",
+        "liquidityAmount": 125000,
+        "volume": 450000,
+        "volume24h": 15000,
+        "timeline": "General election window closes December 2027.",
+        "source": "https://www.reuters.com",
+        "sentiment": 62,
+        "createdAt": "2025-01-15T10:00:00Z",
+        "expiresAt": "2027-02-28T23:59:59Z"
+      },
       "orderBook": {
         "yes": {
           "bids": [{ "price": 0.62, "size": 500 }, ...],
@@ -1633,8 +1675,48 @@ POST /api/v1/positions/:marketId/claim
 ### 15.6 Wallet Endpoints
 
 ```yaml
+GET /api/v1/wallet/state
+  Description: Get complete wallet state (matches Zustand store structure)
+  Headers: Authorization: Bearer <token>
+  Response:
+    {
+      # Matches useWalletStore.stableBalances
+      "stableBalances": {
+        "USDT": 2500.00,
+        "USDC": 1100.00
+      },
+      
+      # Matches useWalletStore.selectedChain
+      "selectedChain": "Polygon",
+      
+      # Available chains for selection
+      "supportedChains": ["BNB", "Polygon", "Arbitrum"],
+      
+      # Recent transactions (matches useWalletStore.transactions)
+      "transactions": [
+        {
+          "id": "tx-1",
+          "type": "Trade",
+          "amount": 230,
+          "asset": "USDT",
+          "chain": "Polygon",
+          "timestamp": "2024-12-01T08:12:00Z",
+          "status": "Completed"
+        },
+        {
+          "id": "tx-2",
+          "type": "Deposit",
+          "amount": 500,
+          "asset": "USDC",
+          "chain": "Arbitrum",
+          "timestamp": "2024-11-28T13:44:00Z",
+          "status": "Completed"
+        }
+      ]
+    }
+
 GET /api/v1/wallet/balances
-  Description: Get user's wallet balances
+  Description: Get user's wallet balances with detailed breakdown
   Headers: Authorization: Bearer <token>
   Response:
     {
@@ -1650,7 +1732,19 @@ GET /api/v1/wallet/balances
           "total": 1100.00
         }
       },
-      "chain": "polygon"
+      "chain": "Polygon"
+    }
+
+PATCH /api/v1/wallet/chain
+  Description: Update selected chain
+  Headers: Authorization: Bearer <token>
+  Request:
+    {
+      "chain": "Arbitrum"  # BNB, Polygon, or Arbitrum
+    }
+  Response:
+    {
+      "selectedChain": "Arbitrum"
     }
 
 POST /api/v1/wallet/deposit
@@ -1714,12 +1808,15 @@ POST /api/v1/wallet/withdraw
     }
 
 GET /api/v1/wallet/transactions
-  Description: Get transaction history
+  Description: Get transaction history (matches Zustand transactions array)
   Headers: Authorization: Bearer <token>
   Query Parameters:
-    - type: deposit, withdrawal, trade, claim
-    - limit: number
-    - before: timestamp
+    - type: Deposit, Withdraw, Trade (matches frontend Transaction.type)
+    - asset: USDT, USDC
+    - chain: BNB, Polygon, Arbitrum
+    - status: Completed, Pending
+    - limit: number (default: 6, max: 50, matches frontend slice limit)
+    - before: timestamp (cursor-based pagination)
   Response:
     {
       "transactions": [
@@ -1736,7 +1833,264 @@ GET /api/v1/wallet/transactions
     }
 ```
 
-### 15.7 GraphQL Schema
+### 15.7 User Profile Endpoints
+
+```yaml
+GET /api/v1/users/me
+  Description: Get current user profile
+  Headers: Authorization: Bearer <token>
+  Response:
+    {
+      "user": {
+        "id": "uuid",
+        "walletAddress": "0x...",
+        "displayName": "Pan-African Strategist",
+        "preferredMarkets": ["Politics", "Business", "Crypto"],
+        "riskSettings": {
+          "weeklyLimit": 10000,
+          "maxPositionSize": 5000,
+          "stopLossEnabled": true,
+          "stopLossPercentage": 25
+        },
+        "createdAt": "2025-01-15T10:00:00Z",
+        "lastLoginAt": "2025-11-28T10:00:00Z"
+      }
+    }
+
+PATCH /api/v1/users/me
+  Description: Update user profile
+  Headers: Authorization: Bearer <token>
+  Request:
+    {
+      "displayName": "Lagos Trader",
+      "preferredMarkets": ["Sports", "Entertainment"]
+    }
+  Response:
+    {
+      "user": { ... }
+    }
+
+PATCH /api/v1/users/me/risk-settings
+  Description: Update risk guardrails
+  Headers: Authorization: Bearer <token>
+  Request:
+    {
+      "weeklyLimit": 15000,
+      "maxPositionSize": 7500,
+      "stopLossEnabled": true,
+      "stopLossPercentage": 20
+    }
+  Response:
+    {
+      "riskSettings": { ... }
+    }
+  
+  # ENFORCEMENT LOGIC:
+  # Risk settings are enforced at the trading engine level:
+  #
+  # 1. Weekly Limit Check (before order placement):
+  #    - Trading engine queries sum of trade volume for current week
+  #    - If (currentWeekVolume + orderValue) > weeklyLimit, reject order
+  #    - Error code 3009: "Weekly trading limit exceeded"
+  #
+  # 2. Max Position Size Check (before order placement):
+  #    - If orderValue > maxPositionSize, reject order
+  #    - Error code 3010: "Position size exceeds maximum"
+  #
+  # 3. Stop Loss Enforcement (background job):
+  #    - Scheduled job runs every 5 minutes
+  #    - For users with stopLossEnabled=true:
+  #      - Calculate unrealized PnL for each position
+  #      - If loss >= stopLossPercentage%, auto-close position at market
+  #      - Send notification via configured channels
+  #
+  # Database triggers update weekly_volume_cache in user_risk_settings table
+
+GET /api/v1/users/:walletAddress/public
+  Description: Get public profile (for leaderboards)
+  Response:
+    {
+      "displayName": "Pan-African Strategist",
+      "totalTrades": 156,
+      "winRate": 0.62,
+      "memberSince": "2025-01-15T10:00:00Z"
+    }
+```
+
+### 15.8 Notification Endpoints
+
+```yaml
+GET /api/v1/notifications/settings
+  Description: Get notification preferences
+  Headers: Authorization: Bearer <token>
+  Response:
+    {
+      "settings": {
+        "telegram": {
+          "enabled": true,
+          "chatId": "123456789",
+          "triggers": ["volatility_spike", "position_update", "settlement"]
+        },
+        "email": {
+          "enabled": true,
+          "address": "user@example.com",
+          "digest": {
+            "enabled": true,
+            "frequency": "weekly",
+            "dayOfWeek": "monday",
+            "timeUtc": "05:00"
+          }
+        },
+        "sms": {
+          "enabled": true,
+          "phoneNumber": "+234...",
+          "triggers": ["settlement_above_threshold"],
+          "thresholdAmount": 5000
+        },
+        "push": {
+          "enabled": false,
+          "deviceTokens": []
+        }
+      }
+    }
+
+PATCH /api/v1/notifications/settings
+  Description: Update notification preferences
+  Headers: Authorization: Bearer <token>
+  Request:
+    {
+      "telegram": {
+        "enabled": true,
+        "triggers": ["volatility_spike", "market_resolution"]
+      },
+      "email": {
+        "digest": {
+          "frequency": "daily"
+        }
+      }
+    }
+  Response:
+    {
+      "settings": { ... }
+    }
+
+POST /api/v1/notifications/telegram/connect
+  Description: Generate Telegram bot connection link
+  Headers: Authorization: Bearer <token>
+  Response:
+    {
+      "botLink": "https://t.me/AfricaPredictsBot?start=abc123",
+      "expiresAt": "2025-11-28T11:00:00Z"
+    }
+
+POST /api/v1/notifications/test
+  Description: Send test notification
+  Headers: Authorization: Bearer <token>
+  Request:
+    {
+      "channel": "telegram",  # telegram, email, sms
+      "message": "Test notification from AfricaPredicts"
+    }
+  Response:
+    {
+      "success": true,
+      "sentAt": "2025-11-28T10:30:00Z"
+    }
+
+GET /api/v1/notifications/history
+  Description: Get notification history
+  Headers: Authorization: Bearer <token>
+  Query Parameters:
+    - channel: telegram, email, sms, push
+    - limit: number (default: 50)
+    - before: timestamp (for pagination)
+  Response:
+    {
+      "notifications": [
+        {
+          "id": "uuid",
+          "channel": "telegram",
+          "type": "volatility_spike",
+          "title": "Price Alert: Nigeria Election",
+          "message": "YES price moved +15% in 1 hour",
+          "sentAt": "2025-11-28T10:00:00Z",
+          "read": true
+        }
+      ],
+      "pagination": {
+        "hasMore": true,
+        "nextCursor": "2025-11-28T09:00:00Z"
+      }
+    }
+```
+
+### 15.8.2 Notification Event Trigger Pipeline
+
+```yaml
+# NOTIFICATION TRIGGER ARCHITECTURE
+#
+# The notification system uses a Redis-backed event queue with dedicated
+# workers for each notification channel.
+
+Event Sources:
+  volatility_spike:
+    - Trading engine publishes to Redis channel: notifications:volatility
+    - Trigger condition: Price moves >10% in 1 hour
+    - Payload: { marketId, marketTitle, priceChange, direction, timestamp }
+    - Delivery: Telegram (immediate), Push (immediate)
+  
+  position_update:
+    - Trading engine publishes when user trade executes
+    - Trigger condition: Any trade execution
+    - Payload: { marketId, side, shares, price, pnl }
+    - Delivery: Email (batched hourly), Push (immediate)
+  
+  settlement:
+    - Oracle service publishes when market resolves
+    - Trigger condition: Market resolved + user has position
+    - Payload: { marketId, outcome, userPayout }
+    - Delivery: SMS (if payout > threshold), Email, Telegram
+  
+  market_resolution:
+    - Oracle service publishes when any market resolves
+    - Trigger condition: Market resolved
+    - Payload: { marketId, marketTitle, outcome }
+    - Delivery: Email (digest), Telegram
+  
+  weekly_digest:
+    - Scheduler triggers every Monday 5am UTC
+    - Content: Portfolio summary, top markets, P&L
+    - Delivery: Email only
+
+Worker Architecture:
+  notification-worker-telegram:
+    - Consumes from queue: notifications:telegram
+    - Uses Telegram Bot API
+    - Requires: TELEGRAM_BOT_TOKEN secret
+    - Rate limit: 30 messages/second
+  
+  notification-worker-email:
+    - Consumes from queue: notifications:email
+    - Uses SendGrid/SES
+    - Requires: EMAIL_API_KEY secret
+    - Rate limit: 100 emails/second
+    - Batching: Groups notifications by user for digest
+  
+  notification-worker-sms:
+    - Consumes from queue: notifications:sms
+    - Uses Twilio
+    - Requires: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN secrets
+    - Rate limit: 10 messages/second
+    - Filter: Only sends if amount > user's sms_threshold_amount
+
+Channel Credential Storage:
+  - Telegram: telegram_chat_id stored in notification_settings table
+  - Email: email_address stored in notification_settings table  
+  - SMS: sms_phone_number stored in notification_settings table
+  - Push: push_device_tokens array in notification_settings table
+```
+
+### 15.9 GraphQL Schema
 
 ```graphql
 type Query {
@@ -1787,21 +2141,109 @@ type Market {
   id: ID!
   slug: String!
   title: String!
-  description: String!
+  description: String!          # marketDescription from frontend
   category: Category!
   country: String!
   status: MarketStatus!
   outcomes: [Outcome!]!
-  liquidity: Float!
+  
+  # Pricing (matches frontend yesPrice/noPrice)
+  yesPrice: Float!
+  noPrice: Float!
+  
+  # Metrics
+  liquidity: LiquidityTier!     # Low, Medium, High
+  liquidityAmount: Float!       # Actual dollar amount
+  volume: Float!                # Total volume
   volume24h: Float!
-  volumeTotal: Float!
+  sentiment: Int!               # 0-100 market sentiment score
+  
+  # Timeline & Sources
+  timeline: String!             # Human-readable timeline info
+  source: String                # External source URL (optional)
+  sourceUrls: [String!]         # Multiple source references
+  
+  # Dates
   createdAt: DateTime!
-  expiresAt: DateTime!
+  expiresAt: DateTime!          # expiry from frontend
   resolvedAt: DateTime
   resolution: Outcome
+  
+  # Related data
   orderBook: OrderBook!
   recentTrades(limit: Int): [Trade!]!
   priceHistory(period: HistoryPeriod): [PricePoint!]!
+}
+
+enum LiquidityTier {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+type User {
+  id: ID!
+  walletAddress: String!
+  displayName: String
+  preferredMarkets: [Category!]!
+  riskSettings: RiskSettings!
+  notificationSettings: NotificationSettings!
+  createdAt: DateTime!
+  lastLoginAt: DateTime
+}
+
+type RiskSettings {
+  weeklyLimit: Float!
+  maxPositionSize: Float!
+  stopLossEnabled: Boolean!
+  stopLossPercentage: Float
+}
+
+type NotificationSettings {
+  telegram: TelegramSettings
+  email: EmailSettings
+  sms: SmsSettings
+  push: PushSettings
+}
+
+type TelegramSettings {
+  enabled: Boolean!
+  chatId: String
+  triggers: [NotificationTrigger!]!
+}
+
+type EmailSettings {
+  enabled: Boolean!
+  address: String
+  digestEnabled: Boolean!
+  digestFrequency: DigestFrequency
+}
+
+type SmsSettings {
+  enabled: Boolean!
+  phoneNumber: String
+  triggers: [NotificationTrigger!]!
+  thresholdAmount: Float
+}
+
+type PushSettings {
+  enabled: Boolean!
+  deviceTokens: [String!]!
+}
+
+enum NotificationTrigger {
+  VOLATILITY_SPIKE
+  POSITION_UPDATE
+  SETTLEMENT
+  MARKET_RESOLUTION
+  PRICE_ALERT
+  WEEKLY_DIGEST
+}
+
+enum DigestFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
 }
 
 input MarketFilter {
@@ -1969,16 +2411,88 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     wallet_address VARCHAR(42) UNIQUE NOT NULL,
     ens_name VARCHAR(255),
+    display_name VARCHAR(100),
     role VARCHAR(50) DEFAULT 'trader',
     email VARCHAR(255),
     email_verified BOOLEAN DEFAULT FALSE,
-    notification_preferences JSONB DEFAULT '{}',
+    phone_number VARCHAR(20),
+    phone_verified BOOLEAN DEFAULT FALSE,
+    
+    -- User preferences (matches Account page)
+    preferred_markets TEXT[] DEFAULT '{}',  -- ['Politics', 'Business', 'Crypto']
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     last_login_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_users_wallet ON users(wallet_address);
+
+-- User Risk Settings Table (matches Account page guardrails)
+CREATE TABLE user_risk_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    
+    weekly_limit DECIMAL(20,2) DEFAULT 10000,       -- Capital guardrails per week
+    max_position_size DECIMAL(20,2) DEFAULT 5000,   -- Max single position
+    stop_loss_enabled BOOLEAN DEFAULT FALSE,
+    stop_loss_percentage DECIMAL(5,2) DEFAULT 25,   -- Auto-close at % loss
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Notification Settings Table (matches Account page notifications)
+CREATE TABLE notification_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    
+    -- Telegram settings
+    telegram_enabled BOOLEAN DEFAULT FALSE,
+    telegram_chat_id VARCHAR(50),
+    telegram_triggers TEXT[] DEFAULT '{}',  -- ['volatility_spike', 'position_update', 'settlement']
+    
+    -- Email settings
+    email_enabled BOOLEAN DEFAULT FALSE,
+    email_address VARCHAR(255),
+    email_digest_enabled BOOLEAN DEFAULT FALSE,
+    email_digest_frequency VARCHAR(20) DEFAULT 'weekly',  -- daily, weekly, monthly
+    email_digest_day VARCHAR(10) DEFAULT 'monday',
+    email_digest_time_utc VARCHAR(5) DEFAULT '06:00',     -- 6am WAT = 5am UTC
+    
+    -- SMS settings
+    sms_enabled BOOLEAN DEFAULT FALSE,
+    sms_phone_number VARCHAR(20),
+    sms_triggers TEXT[] DEFAULT '{}',
+    sms_threshold_amount DECIMAL(20,2) DEFAULT 5000,      -- SMS for settlements above $5k
+    
+    -- Push notification settings
+    push_enabled BOOLEAN DEFAULT FALSE,
+    push_device_tokens TEXT[] DEFAULT '{}',
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Notification History Table
+CREATE TABLE notification_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    
+    channel VARCHAR(20) NOT NULL,           -- telegram, email, sms, push
+    notification_type VARCHAR(50) NOT NULL, -- volatility_spike, settlement, etc.
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    
+    sent_at TIMESTAMPTZ DEFAULT NOW(),
+    delivered_at TIMESTAMPTZ,
+    read_at TIMESTAMPTZ,
+    
+    metadata JSONB DEFAULT '{}'             -- Additional context (market_id, amount, etc.)
+);
+
+CREATE INDEX idx_notifications_user ON notification_history(user_id);
+CREATE INDEX idx_notifications_sent ON notification_history(sent_at DESC);
 
 -- Sessions Table
 CREATE TABLE sessions (
@@ -1995,16 +2509,28 @@ CREATE TABLE sessions (
 CREATE INDEX idx_sessions_user ON sessions(user_id);
 CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 
--- Markets Table
+-- Markets Table (matches frontend Prediction type)
 CREATE TABLE markets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     slug VARCHAR(100) UNIQUE NOT NULL,
     title VARCHAR(500) NOT NULL,
-    description TEXT,
+    description TEXT,                        -- marketDescription from frontend
     category VARCHAR(50) NOT NULL,
     country VARCHAR(100) NOT NULL,
     region VARCHAR(100),
     status VARCHAR(50) DEFAULT 'pending',
+    
+    -- Pricing (matches frontend yesPrice/noPrice)
+    yes_price DECIMAL(10,4) DEFAULT 0.5,
+    no_price DECIMAL(10,4) DEFAULT 0.5,
+    
+    -- Timeline & Sources (from frontend Prediction type)
+    timeline TEXT,                           -- Human-readable timeline info
+    source TEXT,                             -- Primary source URL
+    sentiment INTEGER DEFAULT 50,            -- 0-100 sentiment score
+    
+    -- Liquidity (matches frontend liquidity: "Low" | "Medium" | "High")
+    liquidity_tier VARCHAR(10) DEFAULT 'medium',
     
     -- Contract references
     contract_address VARCHAR(42),
@@ -2013,7 +2539,7 @@ CREATE TABLE markets (
     -- Timing
     created_at TIMESTAMPTZ DEFAULT NOW(),
     activated_at TIMESTAMPTZ,
-    expires_at TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,         -- expiry from frontend
     resolution_deadline TIMESTAMPTZ,
     resolved_at TIMESTAMPTZ,
     
@@ -2030,10 +2556,12 @@ CREATE TABLE markets (
     
     -- Cached metrics (updated by trigger/job)
     total_liquidity DECIMAL(20,2) DEFAULT 0,
+    volume DECIMAL(20,2) DEFAULT 0,          -- volume from frontend
     volume_24h DECIMAL(20,2) DEFAULT 0,
     volume_total DECIMAL(20,2) DEFAULT 0,
     
-    CONSTRAINT valid_status CHECK (status IN ('pending', 'active', 'paused', 'resolved', 'disputed', 'cancelled'))
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'active', 'paused', 'resolved', 'disputed', 'cancelled')),
+    CONSTRAINT valid_liquidity_tier CHECK (liquidity_tier IN ('low', 'medium', 'high'))
 );
 
 CREATE INDEX idx_markets_slug ON markets(slug);
@@ -3192,6 +3720,258 @@ interface OrderUpdateEvent {
 
 ---
 
+## 22.5 Rate Limiting & Operational Safeguards
+
+### 22.5.1 Rate Limiting Configuration
+
+```yaml
+Rate Limits by Endpoint Type:
+
+Public Endpoints (unauthenticated):
+  /api/v1/markets:
+    requests: 100
+    window: 60 seconds
+    key: IP address
+  
+  /api/v1/markets/:slug:
+    requests: 200
+    window: 60 seconds
+    key: IP address
+
+Authenticated Endpoints:
+  /api/v1/orders:
+    requests: 30
+    window: 60 seconds
+    key: wallet_address
+    burst: 10  # Allow burst of 10 orders
+  
+  /api/v1/wallet/deposit:
+    requests: 10
+    window: 300 seconds
+    key: wallet_address
+  
+  /api/v1/wallet/withdraw:
+    requests: 5
+    window: 300 seconds
+    key: wallet_address
+
+WebSocket:
+  connections_per_ip: 5
+  subscriptions_per_connection: 50
+  messages_per_second: 100
+
+Admin Endpoints:
+  /api/v1/admin/*:
+    requests: 100
+    window: 60 seconds
+    key: user_id
+    audit_log: true
+```
+
+### 22.5.2 Rate Limit Response
+
+```json
+// HTTP 429 Too Many Requests
+{
+  "error": {
+    "code": 5001,
+    "message": "Rate limit exceeded",
+    "details": {
+      "limit": 30,
+      "window": "60s",
+      "retryAfter": 45,
+      "remaining": 0
+    }
+  }
+}
+
+// Headers included in all responses:
+// X-RateLimit-Limit: 30
+// X-RateLimit-Remaining: 25
+// X-RateLimit-Reset: 1732793460
+```
+
+### 22.5.3 Error Handling Standards
+
+```yaml
+Error Response Format:
+  {
+    "error": {
+      "code": <numeric_code>,
+      "message": "<human_readable_message>",
+      "details": { ... },     # Optional additional context
+      "requestId": "uuid",    # For support/debugging
+      "timestamp": "ISO8601"
+    }
+  }
+
+Error Code Ranges:
+  1000-1999: Authentication & Authorization
+    1001: Invalid wallet signature
+    1002: Session expired
+    1003: Insufficient permissions
+    1004: Invalid nonce
+    1005: Signature verification failed
+  
+  2000-2999: Market Errors
+    2001: Market not found
+    2002: Market not active
+    2003: Market expired
+    2004: Market paused
+    2005: Invalid category
+    2006: Invalid country
+  
+  3000-3999: Trading Errors
+    3001: Insufficient balance
+    3002: Invalid order price
+    3003: Order size too small
+    3004: Slippage exceeded
+    3005: Order not found
+    3006: Cannot cancel filled order
+    3007: Position not found
+    3008: Market closed for trading
+  
+  4000-4999: Wallet Errors
+    4001: Withdrawal pending
+    4002: Withdrawal limit exceeded
+    4003: Invalid deposit amount
+    4004: Deposit not confirmed
+    4005: Invalid withdrawal address
+  
+  5000-5999: System Errors
+    5001: Rate limit exceeded
+    5002: Service unavailable
+    5003: Database error
+    5004: Blockchain connection error
+    5005: External service timeout
+```
+
+### 22.5.4 Incident Logging & Monitoring
+
+```yaml
+Log Levels:
+  ERROR: System failures, exceptions, failed transactions
+  WARN: Rate limits hit, slow queries, retry attempts
+  INFO: Successful operations, user actions
+  DEBUG: Detailed execution traces (dev only)
+
+Required Log Fields:
+  - timestamp (ISO8601)
+  - level
+  - service
+  - requestId
+  - userId (if authenticated)
+  - walletAddress (if applicable)
+  - action
+  - duration_ms
+  - status_code
+  - error_code (if error)
+  - ip_address
+  - user_agent
+
+Alerts Configuration:
+  Critical (PagerDuty):
+    - Error rate > 5% for 5 minutes
+    - API latency p99 > 2 seconds
+    - Database connection failures
+    - Smart contract interaction failures
+  
+  Warning (Slack):
+    - Error rate > 1% for 10 minutes
+    - Rate limit hits > 100/minute
+    - Unusual trading patterns detected
+  
+  Info (Dashboard):
+    - Daily active users
+    - Trading volume trends
+    - New market creations
+```
+
+### 22.5.5 Rate Limiting Enforcement Layer
+
+```yaml
+# RATE LIMITING IMPLEMENTATION
+#
+# Rate limiting is enforced using Redis sliding window counters at the 
+# API Gateway layer (NestJS middleware or Envoy sidecar).
+
+Enforcement Stack:
+  Layer 1 - Edge (Cloudflare):
+    - DDoS protection
+    - Bot detection
+    - Geographic blocking
+    - Global rate limit: 1000 req/sec per IP
+  
+  Layer 2 - API Gateway (NestJS @nestjs/throttler):
+    - Per-endpoint rate limits (see 22.5.1)
+    - Redis-backed sliding window counter
+    - Key format: ratelimit:{walletAddress}:{endpoint}:{window}
+    - TTL: window duration + 10s buffer
+  
+  Layer 3 - Service Level:
+    - Trading engine: Order rate limits
+    - Wallet service: Withdrawal cooldowns
+    - WebSocket: Connection/subscription limits
+
+Redis Implementation:
+  # Sliding window counter using sorted sets
+  ZADD ratelimit:{key} {timestamp} {request_id}
+  ZREMRANGEBYSCORE ratelimit:{key} 0 {window_start}
+  ZCARD ratelimit:{key}
+  EXPIRE ratelimit:{key} {window_seconds}
+
+Abuse Response Workflow:
+  1. First violation: Return 429, log warning
+  2. 5 violations in 1 hour: Temporary 15-min block
+  3. 20 violations in 24 hours: 24-hour block, alert to ops
+  4. Repeated abuse: Manual review, potential account suspension
+  
+  # Blocked requests stored in Redis set
+  SADD blocked:{ip} {wallet_address}
+  EXPIRE blocked:{ip} {block_duration}
+
+Bypass Rules:
+  - Admin endpoints: Higher limits, no IP blocking
+  - Whitelisted partners: Custom quotas via API key
+  - Emergency: Rate limits can be disabled via feature flag
+```
+
+### 22.5.6 Circuit Breaker Pattern
+
+```typescript
+interface CircuitBreakerConfig {
+  name: string;
+  failureThreshold: number;    // Failures before opening
+  successThreshold: number;    // Successes before closing
+  timeout: number;             // Time in open state before half-open
+  monitoredErrors: string[];   // Error types that trigger breaker
+}
+
+// Example configurations
+const circuitBreakers = {
+  blockchain: {
+    failureThreshold: 5,
+    successThreshold: 3,
+    timeout: 30000,  // 30 seconds
+    monitoredErrors: ['NETWORK_ERROR', 'TIMEOUT', 'RPC_ERROR']
+  },
+  externalOracle: {
+    failureThreshold: 3,
+    successThreshold: 2,
+    timeout: 60000,  // 1 minute
+    monitoredErrors: ['API_ERROR', 'TIMEOUT']
+  },
+  notificationService: {
+    failureThreshold: 10,
+    successThreshold: 5,
+    timeout: 120000,  // 2 minutes
+    monitoredErrors: ['DELIVERY_FAILED', 'TIMEOUT']
+  }
+};
+```
+
+---
+
 ## 23. Analytics & Reporting
 
 ### 23.1 Platform Metrics Dashboard
@@ -3603,6 +4383,9 @@ Phase 6: Launch Preparation (Weeks 21-22)
 |---------|------|--------|---------|
 | 1.0 | Nov 28, 2025 | Agent | Initial TAD - Frontend architecture |
 | 2.0 | Nov 28, 2025 | Agent | Added complete backend specifications |
+| 2.1 | Nov 28, 2025 | Agent | Added User Profile & Notification APIs (15.7, 15.8), updated Market schema with frontend fields (timeline, sentiment, source, liquidity_tier), added Rate Limiting & Error Handling (22.5), added database tables for user_risk_settings, notification_settings, notification_history |
+| 2.2 | Nov 28, 2025 | Agent | Updated Market API responses to include all frontend Prediction fields (yesPrice, noPrice, timeline, source, sentiment, liquidityTier). Added wallet/state endpoint matching Zustand store structure. Added wallet/chain endpoint for chain selection. |
+| 2.3 | Nov 28, 2025 | Agent | Added risk settings enforcement logic (weekly limit, max position, stop loss checks). Added notification trigger pipeline architecture with event sources and worker details. Added wallet transactions pagination. Added rate limiting enforcement layer with Redis implementation and abuse response workflow. |
 
 ---
 
