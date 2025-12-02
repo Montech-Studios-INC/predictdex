@@ -15,6 +15,7 @@ import type {
   AdminDeposit,
   AdminDepositStats,
   AdminWithdrawal,
+  CurrencyCode,
 } from "./types";
 
 export interface EndpointTestResult {
@@ -206,12 +207,30 @@ class ApiAuditor {
     const testMarket = marketsResult.markets.find((m) => m.status === "open");
 
     await this.testEndpoint(
-      "POST /trade/preview (sample)",
+      "POST /trade/preview (YES)",
       "POST",
       () =>
         apiClient.previewTrade(testMarket?.id || "test", "YES", 1),
       !testMarket,
       "No open markets available"
+    );
+
+    await this.testEndpoint(
+      "POST /trade/preview (NO)",
+      "POST",
+      () =>
+        apiClient.previewTrade(testMarket?.id || "test", "NO", 1),
+      !testMarket,
+      "No open markets available"
+    );
+
+    await this.testEndpoint(
+      "PATCH /users/me (dry run)",
+      "PATCH",
+      async () => {
+        const profile = await apiClient.getUserProfile();
+        return { wouldUpdate: { name: profile.name } };
+      }
     );
 
     return this.results.filter(
@@ -270,6 +289,25 @@ class ApiAuditor {
 
     await this.testEndpoint("GET /admin/crypto/withdrawals?status=pending", "GET", () =>
       apiClient.getAdminWithdrawals({ status: "pending", limit: 10 })
+    );
+
+    const closedMarkets = await apiClient.getAdminMarkets({ status: "closed", limit: 1 });
+    const closedMarket = closedMarkets.markets[0];
+
+    await this.testEndpoint(
+      "GET /admin/settlement/preview (sample)",
+      "GET",
+      () => apiClient.getSettlementPreview(closedMarket?.id || "test", "YES"),
+      !closedMarket,
+      "No closed markets available"
+    );
+
+    await this.testEndpoint(
+      "POST /admin/settlement/trigger-check (dry run info)",
+      "POST",
+      async () => {
+        return { note: "Would trigger settlement check - skipping to avoid side effects" };
+      }
     );
 
     return this.results.filter((r) => r.endpoint.includes("/admin"));
