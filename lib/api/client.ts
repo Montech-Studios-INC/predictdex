@@ -132,8 +132,8 @@ class ApiClient {
     if (params?.category) searchParams.set('category', params.category);
     if (params?.status) searchParams.set('status', params.status);
     if (params?.currency) searchParams.set('currency', params.currency);
-    if (params?.limit) searchParams.set('limit', params.limit.toString());
-    if (params?.offset) searchParams.set('offset', params.offset.toString());
+    if (params?.limit !== undefined) searchParams.set('limit', params.limit.toString());
+    if (params?.offset !== undefined) searchParams.set('offset', params.offset.toString());
 
     const query = searchParams.toString();
     return this.request(`/markets${query ? `?${query}` : ''}`);

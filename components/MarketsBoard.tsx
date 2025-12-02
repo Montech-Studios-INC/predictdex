@@ -9,6 +9,7 @@ import type { MarketCategory } from "@/lib/api/types";
 type Props = {
   title: string;
   limit?: number;
+  offset?: number;
   description?: string;
   showFilters?: boolean;
   initialCategory?: MarketCategory | null;
@@ -17,6 +18,7 @@ type Props = {
 export default function MarketsBoard({
   title,
   limit = 20,
+  offset = 0,
   description,
   showFilters = true,
   initialCategory = null,
@@ -26,6 +28,7 @@ export default function MarketsBoard({
   const { markets, isLoading, error } = useMarkets({
     category: categoryFilter,
     limit,
+    offset,
   });
 
   const handleCategoryChange = (category: string | null) => {
