@@ -40,7 +40,8 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 │   │   ├── useMarkets.ts  # Markets, market detail, order book hooks
 │   │   ├── useTrading.ts  # Trade preview and execution
 │   │   ├── useWallet.ts   # Balances, transactions, portfolio, deposits
-│   │   └── useProfile.ts  # User profile management
+│   │   ├── useProfile.ts  # User profile management
+│   │   └── useCryptoPrices.ts # Live crypto prices from CoinGecko
 │   └── stores/
 │       └── useAuthStore.ts # Auth state (OTP, SIWE, logout)
 └── data/
@@ -91,6 +92,10 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 ✅ Market detail pages with live order book (YES/NO toggle)
 ✅ Trading form with price preview and execution
 ✅ Wallet dashboard with balances, portfolio, crypto deposits
+✅ Enhanced deposit flow with QR codes for mobile
+✅ Live crypto prices (CoinGecko API, refreshes every 60s)
+✅ USD to crypto conversion reference table
+✅ Minimum deposit amounts displayed (ETH: 0.001, USDC/USDT: $5)
 ✅ User profile management
 ✅ Toast notifications for errors and success messages
 ✅ Auth-protected routes (Wallet, Account)

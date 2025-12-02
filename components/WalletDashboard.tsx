@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { useBalances, usePortfolio, useTransactions, useCryptoDeposits } from "@/lib/hooks/useWallet";
+import { useCryptoPrices } from "@/lib/hooks/useCryptoPrices";
 import { formatCurrency, formatDateTime, truncateAddress } from "@/lib/utils";
 import { toast } from "./Toast";
 import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
+
+const MINIMUM_DEPOSITS: Record<string, { amount: number; usdEquivalent: string }> = {
+  ETH: { amount: 0.001, usdEquivalent: "~$3.50" },
+  USDC: { amount: 5, usdEquivalent: "$5.00" },
+  USDT: { amount: 5, usdEquivalent: "$5.00" },
+};
 
 type Tab = "balances" | "portfolio" | "deposit" | "history";
 
@@ -19,6 +27,12 @@ export default function WalletDashboard() {
   const { portfolio, isLoading: loadingPortfolio } = usePortfolio();
   const { transactions, isLoading: loadingTransactions } = useTransactions({ limit: 20 });
   const { addresses, pending, isLoading: loadingDeposits } = useCryptoDeposits();
+  const { prices, convertFromUsd, getPrice } = useCryptoPrices();
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedCurrency(null);
+  }, [addresses]);
 
   if (!isAuthenticated) {
     return (
@@ -200,7 +214,16 @@ export default function WalletDashboard() {
 
       {activeTab === "deposit" && (
         <div className="border border-white/10 bg-charcoal/60 p-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-mist mb-6">Crypto Deposit Addresses</p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs uppercase tracking-[0.4em] text-mist">Crypto Deposit Addresses</p>
+            {prices && (
+              <div className="flex items-center gap-4 text-xs text-mist">
+                <span>ETH: <span className="text-gold">${prices.ETH.toLocaleString()}</span></span>
+                <span>USDC: <span className="text-gold">${prices.USDC.toFixed(2)}</span></span>
+                <span>USDT: <span className="text-gold">${prices.USDT.toFixed(2)}</span></span>
+              </div>
+            )}
+          </div>
           {loadingDeposits ? (
             <div className="space-y-4 animate-pulse">
               {[...Array(3)].map((_, i) => (
@@ -212,29 +235,96 @@ export default function WalletDashboard() {
           ) : (
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-3">
-                {Object.entries(addresses).map(([currency, data]) => (
-                  <div
-                    key={currency}
-                    className="border border-white/10 bg-white/5 p-4"
-                  >
-                    <p className="text-xs uppercase tracking-[0.4em] text-gold mb-2">
-                      {currency}
-                    </p>
-                    <p className="text-xs text-mist mb-2">Network: {data.network}</p>
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs text-white break-all flex-1">
-                        {truncateAddress(data.address, 8)}
-                      </code>
-                      <button
-                        onClick={() => copyToClipboard(data.address)}
-                        className="text-xs text-gold hover:text-white"
-                      >
-                        Copy
-                      </button>
+                {Object.entries(addresses).map(([currency, data]) => {
+                  const normalizedCurrency = currency.toUpperCase();
+                  const minDeposit = MINIMUM_DEPOSITS[normalizedCurrency];
+                  const isSelected = selectedCurrency === currency;
+                  
+                  return (
+                    <div
+                      key={currency}
+                      className={`border bg-white/5 p-4 cursor-pointer transition-all ${
+                        isSelected ? "border-gold" : "border-white/10 hover:border-white/30"
+                      }`}
+                      onClick={() => setSelectedCurrency(isSelected ? null : currency)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs uppercase tracking-[0.4em] text-gold">
+                          {currency.toUpperCase()}
+                        </p>
+                        {(() => {
+                          const price = getPrice(currency);
+                          return price !== null ? (
+                            <span className="text-xs text-mist">
+                              1 {currency.toUpperCase()} = ${price.toLocaleString()}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
+                      <p className="text-xs text-mist mb-2">Network: {data.network}</p>
+                      
+                      {minDeposit && (
+                        <p className="text-xs text-electric mb-3">
+                          Min: {minDeposit.amount} {currency} ({minDeposit.usdEquivalent})
+                        </p>
+                      )}
+
+                      {isSelected && (
+                        <div className="my-4 flex justify-center">
+                          <div className="bg-white p-3 rounded-lg">
+                            <QRCodeSVG
+                              value={data.address}
+                              size={140}
+                              level="H"
+                              includeMargin={false}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs text-white break-all flex-1">
+                          {isSelected ? data.address : truncateAddress(data.address, 8)}
+                        </code>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(data.address);
+                          }}
+                          className="text-xs text-gold hover:text-white px-2 py-1 border border-gold/30 hover:border-gold"
+                        >
+                          Copy
+                        </button>
+                      </div>
+
+                      {!isSelected && (
+                        <p className="text-xs text-mist mt-3 text-center">Click to show QR code</p>
+                      )}
+
+                      {isSelected && getPrice(currency) !== null && (
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <p className="text-xs text-mist mb-2">Quick Reference:</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            {[10, 50, 100, 500].map((usd) => {
+                              const converted = convertFromUsd(usd, currency);
+                              if (converted === 0) return null;
+                              return (
+                                <div key={usd} className="flex justify-between text-mist">
+                                  <span>${usd}</span>
+                                  <span className="text-white">
+                                    {converted.toFixed(currency.toUpperCase() === "ETH" ? 6 : 2)} {currency.toUpperCase()}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              
               {pending.length > 0 && (
                 <div className="mt-6">
                   <p className="text-xs uppercase tracking-[0.4em] text-mist mb-4">Pending Deposits</p>
@@ -250,6 +340,7 @@ export default function WalletDashboard() {
                   </div>
                 </div>
               )}
+              
               <div className="border-t border-white/10 pt-4 mt-4">
                 <p className="text-xs text-mist">
                   Send only the specified cryptocurrency to the address above. Sending any other asset may result in permanent loss.
