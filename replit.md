@@ -3,8 +3,8 @@
 ## Overview
 AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application focused on African narratives. The app features predictions on politics, civics, sports, and culture across the continent. Built with a futuristic, pan-African dark theme aesthetic.
 
-**Status:** Development - Frontend connected to production API
-**Last Updated:** December 2, 2025
+**Status:** Production Ready - Pre-deployment audit completed
+**Last Updated:** December 8, 2025
 
 ## Tech Stack
 - **Framework:** Next.js 13 (App Router) + React 18
@@ -171,3 +171,14 @@ npx playwright test e2e/flows.spec.ts
 - Wallet deposit addresses generated per-user
 - Crypto deposits only (fiat deferred)
 - Optimized for Replit's iframe preview environment
+
+## Pre-Deployment Audit
+- **Audit Date:** December 8, 2025
+- **Status:** Ready for Launch
+- **Report:** See `docs/PREDEPLOYMENT_AUDIT.md`
+- **Backend Pending:** Resend email configuration (mail.africapredicts.com)
+
+## Email Configuration (Backend Team)
+The Resend domain `mail.africapredicts.com` has been configured. Backend needs:
+1. Set `RESEND_API_KEY` environment variable
+2. Update sender to `noreply@mail.africapredicts.com`
