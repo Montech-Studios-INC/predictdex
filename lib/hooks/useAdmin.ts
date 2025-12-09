@@ -30,6 +30,12 @@ export function useAdminMarkets(params?: {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthReady } = useAuthStore();
+  
+  // Memoize params to prevent unnecessary re-fetches
+  const status = params?.status;
+  const category = params?.category;
+  const limit = params?.limit;
+  const offset = params?.offset;
 
   const fetchMarkets = useCallback(async () => {
     if (!isAuthReady) {
@@ -45,7 +51,7 @@ export function useAdminMarkets(params?: {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiClient.getAdminMarkets(params);
+      const response = await apiClient.getAdminMarkets({ status, category, limit, offset });
       setMarkets(response?.markets ?? []);
       setTotal(response?.total ?? 0);
     } catch (err) {
@@ -55,7 +61,7 @@ export function useAdminMarkets(params?: {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.role, isAuthReady, params?.status, params?.category, params?.limit, params?.offset]);
+  }, [user?.role, isAuthReady, status, category, limit, offset]);
 
   useEffect(() => {
     fetchMarkets();
