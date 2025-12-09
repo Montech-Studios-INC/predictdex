@@ -42,10 +42,12 @@ export function useAdminMarkets(params?: {
     setError(null);
     try {
       const response = await apiClient.getAdminMarkets(params);
-      setMarkets(response.markets);
-      setTotal(response.total);
+      setMarkets(response?.markets ?? []);
+      setTotal(response?.total ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load markets");
+      setMarkets([]);
+      setTotal(0);
     } finally {
       setIsLoading(false);
     }
@@ -209,13 +211,13 @@ export function useAdminCrypto() {
     setError(null);
     try {
       const [depositsRes, statsRes, withdrawalsRes] = await Promise.all([
-        apiClient.getAdminDeposits({ status: "pending", limit: 50 }),
-        apiClient.getAdminDepositStats(),
-        apiClient.getAdminWithdrawals({ status: "pending", limit: 50 }),
+        apiClient.getAdminDeposits({ status: "pending", limit: 50 }).catch(() => ({ deposits: [] })),
+        apiClient.getAdminDepositStats().catch(() => ({ pendingCount: 0, pendingVolume: 0, creditedToday: 0, creditedVolumeToday: 0 })),
+        apiClient.getAdminWithdrawals({ status: "pending", limit: 50 }).catch(() => ({ withdrawals: [] })),
       ]);
-      setDeposits(depositsRes.deposits);
-      setDepositStats(statsRes);
-      setWithdrawals(withdrawalsRes.withdrawals);
+      setDeposits(depositsRes?.deposits ?? []);
+      setDepositStats(statsRes ?? { pendingCount: 0, pendingVolume: 0, creditedToday: 0, creditedVolumeToday: 0 });
+      setWithdrawals(withdrawalsRes?.withdrawals ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load crypto data");
     } finally {
