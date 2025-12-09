@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import MarketsBoard from "@/components/MarketsBoard";
-import { categories } from "@/data/predictions";
 import type { MarketCategory } from "@/lib/api/types";
+
+const categories = ["Politics", "Civics", "Sports", "Culture"] as const;
 
 type Props = {
   params: {

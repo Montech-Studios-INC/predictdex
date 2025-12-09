@@ -7,7 +7,6 @@ import { useEffect } from "react";
 
 const links = [
   { href: "/markets", label: "Markets" },
-  { href: "/country/nigeria", label: "Countries" },
   { href: "/category/politics", label: "Categories" },
   { href: "/wallet", label: "Wallet", protected: true },
   { href: "/account", label: "Account", protected: true },

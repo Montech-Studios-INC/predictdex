@@ -46,14 +46,12 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 │   │   └── useAdmin.ts    # Admin hooks for markets, settlement, crypto
 │   └── stores/
 │       └── useAuthStore.ts # Auth state (OTP, SIWE, logout)
-├── app/admin/             # Admin dashboard (role-protected)
-│   ├── layout.tsx         # Admin layout with access guard
-│   ├── page.tsx           # Dashboard overview with stats
-│   ├── markets/           # Markets management (create, edit, resolve)
-│   ├── settlement/        # Settlement queue and resolution
-│   └── crypto/            # Deposits and withdrawals management
-└── data/
-    └── predictions.ts     # Categories list (fallback)
+└── app/admin/             # Admin dashboard (role-protected)
+    ├── layout.tsx         # Admin layout with access guard
+    ├── page.tsx           # Dashboard overview with stats
+    ├── markets/           # Markets management (create, edit, resolve)
+    ├── settlement/        # Settlement queue and resolution
+    └── crypto/            # Deposits and withdrawals management
 ```
 
 ## Replit Configuration
