@@ -20,12 +20,16 @@ export default function AdminMarketsPage() {
   });
 
   const handleCreate = async (data: AdminMarketCreate) => {
-    const result = await createMarket(data);
-    if (result) {
-      toast("Market created successfully", "success");
-      setShowCreateModal(false);
-    } else {
-      toast("Failed to create market", "error");
+    try {
+      const result = await createMarket(data);
+      if (result) {
+        toast("Market created successfully", "success");
+        setShowCreateModal(false);
+      } else {
+        toast(error || "Failed to create market", "error");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to create market", "error");
     }
   };
 
@@ -206,9 +210,14 @@ function CreateMarketModal({
     
     setIsSubmitting(true);
     const payload: AdminMarketCreate = {
-      ...formData,
+      slug: formData.slug,
+      question: formData.question,
+      description: formData.description,
+      category: formData.category,
+      currency: formData.currency,
       closesAt: new Date(closesAtLocal).toISOString(),
     };
+    console.log("Creating market with payload:", payload);
     await onSubmit(payload);
     setIsSubmitting(false);
   };
