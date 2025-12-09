@@ -6,8 +6,10 @@ const nextConfig = {
   },
 };
 
-if (!process.env.NEXT_PUBLIC_WALLETCONNECT_ID && process.env.NODE_ENV === 'production') {
-  console.warn('Warning: NEXT_PUBLIC_WALLETCONNECT_ID is not set. Wallet connections may fail.');
+if (process.env.NODE_ENV === 'production' && process.env.npm_lifecycle_event === 'build') {
+  if (!process.env.NEXT_PUBLIC_WALLETCONNECT_ID) {
+    throw new Error('Build Error: NEXT_PUBLIC_WALLETCONNECT_ID is required for production builds.');
+  }
 }
 
 module.exports = nextConfig;

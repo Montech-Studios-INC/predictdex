@@ -83,22 +83,24 @@ class ApiClient {
       throw new Error(error.message || `HTTP error ${response.status}`);
     }
 
-    const contentLength = response.headers.get('content-length');
+    if (response.status === 204) {
+      return { success: true } as T;
+    }
+
     const contentType = response.headers.get('content-type');
-    
-    if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
-      return {} as T;
+    if (!contentType?.includes('application/json')) {
+      return { success: true } as T;
     }
 
     const text = await response.text();
     if (!text || text.trim() === '') {
-      return {} as T;
+      return { success: true } as T;
     }
 
     try {
       return JSON.parse(text) as T;
     } catch {
-      return {} as T;
+      return { success: true } as T;
     }
   }
 
