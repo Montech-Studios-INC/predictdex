@@ -30,26 +30,16 @@ export interface MarketsResponse {
 
 export interface OrderBookLevel {
   price: number;
-  shares: number;
-}
-
-export interface OrderBookSide {
-  bids: OrderBookLevel[];
-  asks: OrderBookLevel[];
+  size: number;
 }
 
 export interface OrderBookResponse {
-  market: {
-    id: string;
-    slug: string;
-    question: string;
-    yesPrice: number;
-    noPrice: number;
-  };
-  orderbook: {
-    yes: OrderBookSide;
-    no: OrderBookSide;
-  };
+  marketId: string;
+  currency: CurrencyCode;
+  symbol: string;
+  yesBids: OrderBookLevel[];
+  noAsks: OrderBookLevel[];
+  updatedAt: string;
 }
 
 export interface Trade {
