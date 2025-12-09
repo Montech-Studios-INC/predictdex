@@ -52,9 +52,16 @@ export function useAdminMarkets(params?: {
     setError(null);
     try {
       const response = await apiClient.getAdminMarkets({ status, category, limit, offset });
+      console.log("[Admin Markets] API response:", { 
+        marketsCount: response?.markets?.length ?? 0, 
+        total: response?.total ?? 0,
+        status, 
+        category 
+      });
       setMarkets(response?.markets ?? []);
       setTotal(response?.total ?? 0);
     } catch (err) {
+      console.error("[Admin Markets] API error:", err);
       setError(err instanceof Error ? err.message : "Failed to load markets");
       setMarkets([]);
       setTotal(0);
