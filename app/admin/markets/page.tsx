@@ -189,21 +189,27 @@ function CreateMarketModal({
   onSubmit: (data: AdminMarketCreate) => Promise<void>;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<AdminMarketCreate>({
+  const [closesAtLocal, setClosesAtLocal] = useState("");
+  const [formData, setFormData] = useState<Omit<AdminMarketCreate, "closesAt">>({
     slug: "",
     question: "",
     description: "",
     category: "Politics",
     currency: "USDC",
-    closesAt: "",
     yesPrice: 0.5,
     noPrice: 0.5,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!closesAtLocal) return;
+    
     setIsSubmitting(true);
-    await onSubmit(formData);
+    const payload: AdminMarketCreate = {
+      ...formData,
+      closesAt: new Date(closesAtLocal).toISOString(),
+    };
+    await onSubmit(payload);
     setIsSubmitting(false);
   };
 
@@ -288,8 +294,8 @@ function CreateMarketModal({
             </label>
             <input
               type="datetime-local"
-              value={formData.closesAt}
-              onChange={(e) => setFormData({ ...formData, closesAt: new Date(e.target.value).toISOString() })}
+              value={closesAtLocal}
+              onChange={(e) => setClosesAtLocal(e.target.value)}
               className="w-full bg-white/5 border border-white/10 px-3 py-2 text-white focus:border-gold focus:outline-none"
               required
             />
