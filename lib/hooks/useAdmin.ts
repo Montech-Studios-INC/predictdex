@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/lib/api/client";
+import { normalizeListResponse, extractArrayFromResponse } from "@/lib/api/responseHelpers";
 import type {
   Market,
   MarketsResponse,
@@ -52,9 +53,7 @@ export function useAdminMarkets(params?: {
     setError(null);
     try {
       const response = await apiClient.getAdminMarkets({ status, category, limit, offset });
-      // Handle both array response and wrapped { markets, total } response
-      const marketsArray = Array.isArray(response) ? response : (response?.markets ?? []);
-      const totalCount = Array.isArray(response) ? response.length : (response?.total ?? 0);
+      const { data: marketsArray, total: totalCount } = normalizeListResponse<Market>(response, 'markets');
       console.log("[Admin Markets] API response:", { 
         marketsCount: marketsArray.length, 
         total: totalCount,
@@ -243,9 +242,9 @@ export function useAdminCrypto() {
         apiClient.getAdminDepositStats().catch(() => ({ pendingCount: 0, pendingVolume: 0, creditedToday: 0, creditedVolumeToday: 0 })),
         apiClient.getAdminWithdrawals({ status: "pending", limit: 50 }).catch(() => ({ withdrawals: [] })),
       ]);
-      setDeposits(depositsRes?.deposits ?? []);
+      setDeposits(extractArrayFromResponse<AdminDeposit>(depositsRes, 'deposits'));
       setDepositStats(statsRes ?? { pendingCount: 0, pendingVolume: 0, creditedToday: 0, creditedVolumeToday: 0 });
-      setWithdrawals(withdrawalsRes?.withdrawals ?? []);
+      setWithdrawals(extractArrayFromResponse<AdminWithdrawal>(withdrawalsRes, 'withdrawals'));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load crypto data");
     } finally {

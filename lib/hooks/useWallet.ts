@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/lib/api/client";
+import { normalizeListResponse, extractArrayFromResponse } from "@/lib/api/responseHelpers";
 import type {
   WalletBalance,
   WalletTransaction,
@@ -37,7 +38,8 @@ export function useBalances(): UseBalancesReturn {
     setError(null);
     try {
       const response = await apiClient.getAllBalances();
-      const cryptoBalances = response.filter((b) =>
+      const balancesArray = extractArrayFromResponse<WalletBalance>(response, 'balances');
+      const cryptoBalances = balancesArray.filter((b) =>
         ["ETH", "USDC", "USDT"].includes(b.currency)
       );
       setBalances(cryptoBalances);
@@ -85,8 +87,9 @@ export function useTransactions(params?: {
     setError(null);
     try {
       const response = await apiClient.getTransactions(params);
-      setTransactions(response.transactions);
-      setTotal(response.total);
+      const { data, total: totalCount } = normalizeListResponse<WalletTransaction>(response, 'transactions');
+      setTransactions(data);
+      setTotal(totalCount);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load transactions");
     } finally {

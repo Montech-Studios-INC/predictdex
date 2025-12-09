@@ -35,7 +35,8 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 ├── lib/
 │   ├── api/
 │   │   ├── client.ts      # API client with auth token handling
-│   │   └── types.ts       # TypeScript types for API responses
+│   │   ├── types.ts       # TypeScript types for API responses
+│   │   └── responseHelpers.ts # Safe API response extraction utilities
 │   ├── hooks/
 │   │   ├── useMarkets.ts  # Markets, market detail, order book hooks
 │   │   ├── useTrading.ts  # Trade preview and execution
@@ -171,6 +172,22 @@ npx playwright test e2e/flows.spec.ts
 - Wallet deposit addresses generated per-user
 - Crypto deposits only (fiat deferred)
 - Optimized for Replit's iframe preview environment
+
+## API Response Handling
+The frontend uses helper functions in `lib/api/responseHelpers.ts` to safely handle API responses that may return either:
+1. Direct arrays: `[{ id: 1 }, { id: 2 }]`
+2. Wrapped objects: `{ markets: [...], total: 14 }`
+
+**Always use these helpers when processing list responses:**
+```typescript
+import { normalizeListResponse, extractArrayFromResponse } from "@/lib/api/responseHelpers";
+
+// For paginated lists with total count
+const { data, total } = normalizeListResponse<Market>(response, 'markets');
+
+// For simple array extraction
+const items = extractArrayFromResponse<Item>(response, 'items');
+```
 
 ## Pre-Deployment Audit
 - **Audit Date:** December 8, 2025

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/lib/api/client";
+import { normalizeListResponse } from "@/lib/api/responseHelpers";
 import type { Market, MarketCategory, OrderBookResponse, TradesResponse } from "@/lib/api/types";
 
 interface UseMarketsParams {
@@ -34,8 +35,9 @@ export function useMarkets({ category, limit = 20, offset = 0 }: UseMarketsParam
         limit,
         offset,
       });
-      setMarkets(response.markets);
-      setTotal(response.total);
+      const { data, total: totalCount } = normalizeListResponse<Market>(response, 'markets');
+      setMarkets(data);
+      setTotal(totalCount);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load markets");
       setMarkets([]);
