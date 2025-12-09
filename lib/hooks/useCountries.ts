@@ -42,7 +42,7 @@ export function useCountries(): UseCountriesReturn {
     const fetchCountries = async () => {
       try {
         const response = await apiClient.getCountries();
-        if (response.countries && response.countries.length > 0) {
+        if (response?.countries?.length > 0) {
           setCountries(response.countries);
         }
       } catch {
