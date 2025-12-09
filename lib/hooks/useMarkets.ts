@@ -38,7 +38,13 @@ export function useMarkets({ category, country, limit = 20, offset = 0 }: UseMar
         offset,
       });
       const { data, total: totalCount } = normalizeListResponse<Market>(response, 'markets');
-      setMarkets(data);
+      // Sort by createdAt descending (newest first)
+      const sorted = [...data].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      setMarkets(sorted);
       setTotal(totalCount);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load markets");
