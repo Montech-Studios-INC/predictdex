@@ -73,11 +73,11 @@ export default function AdminSettlementPage() {
           </div>
           <div className="border border-white/10 bg-white/5 px-4 py-3">
             <p className="text-xs uppercase tracking-widest text-mist">Payouts Today</p>
-            <p className="text-2xl font-semibold text-white mt-1">${stats.totalPayoutsToday.toLocaleString()}</p>
+            <p className="text-2xl font-semibold text-white mt-1">${(stats.totalPayoutsToday ?? 0).toLocaleString()}</p>
           </div>
           <div className="border border-white/10 bg-white/5 px-4 py-3">
             <p className="text-xs uppercase tracking-widest text-mist">Payouts This Week</p>
-            <p className="text-2xl font-semibold text-white mt-1">${stats.totalPayoutsThisWeek.toLocaleString()}</p>
+            <p className="text-2xl font-semibold text-white mt-1">${(stats.totalPayoutsThisWeek ?? 0).toLocaleString()}</p>
           </div>
         </div>
       )}
@@ -126,15 +126,15 @@ export default function AdminSettlementPage() {
                       </div>
                       <div>
                         <span className="text-mist">Total Staked:</span>{" "}
-                        <span className="text-white">{market.symbol}{market.totalStaked.toLocaleString()}</span>
+                        <span className="text-white">{market.symbol}{(market.totalStaked ?? 0).toLocaleString()}</span>
                       </div>
                       <div>
                         <span className="text-mist">YES Staked:</span>{" "}
-                        <span className="text-green-400">{market.symbol}{market.yesStaked.toLocaleString()}</span>
+                        <span className="text-green-400">{market.symbol}{(market.yesStaked ?? 0).toLocaleString()}</span>
                       </div>
                       <div>
                         <span className="text-mist">NO Staked:</span>{" "}
-                        <span className="text-red-400">{market.symbol}{market.noStaked.toLocaleString()}</span>
+                        <span className="text-red-400">{market.symbol}{(market.noStaked ?? 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -210,22 +210,22 @@ export default function AdminSettlementPage() {
                 </div>
                 <div className="border border-white/10 bg-white/5 px-4 py-3 text-center">
                   <p className="text-xs text-mist">Total Payout</p>
-                  <p className="text-xl font-semibold text-gold">{preview.market.symbol}{preview.summary.totalPayout.toLocaleString()}</p>
+                  <p className="text-xl font-semibold text-gold">{preview.market.symbol}{(preview.summary.totalPayout ?? 0).toLocaleString()}</p>
                 </div>
               </div>
 
-              {preview.winners.length > 0 && (
+              {(preview.winners?.length ?? 0) > 0 && (
                 <div>
-                  <h3 className="text-xs uppercase tracking-widest text-mist mb-3">Winners ({preview.winners.length})</h3>
+                  <h3 className="text-xs uppercase tracking-widest text-mist mb-3">Winners ({preview.winners?.length ?? 0})</h3>
                   <div className="max-h-40 overflow-y-auto space-y-2">
-                    {preview.winners.slice(0, 10).map((user) => (
+                    {(preview.winners ?? []).slice(0, 10).map((user) => (
                       <div key={user.positionId} className="flex items-center justify-between border border-green-500/20 bg-green-900/10 px-3 py-2 text-sm">
                         <span className="text-mist">{user.userEmail}</span>
-                        <span className="text-green-400">+{preview.market.symbol}{user.payout.toLocaleString()}</span>
+                        <span className="text-green-400">+{preview.market.symbol}{(user.payout ?? 0).toLocaleString()}</span>
                       </div>
                     ))}
-                    {preview.winners.length > 10 && (
-                      <p className="text-xs text-mist text-center">...and {preview.winners.length - 10} more</p>
+                    {(preview.winners?.length ?? 0) > 10 && (
+                      <p className="text-xs text-mist text-center">...and {(preview.winners?.length ?? 0) - 10} more</p>
                     )}
                   </div>
                 </div>

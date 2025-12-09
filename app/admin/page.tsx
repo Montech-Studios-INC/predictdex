@@ -58,9 +58,9 @@ export default function AdminDashboard() {
             />
             <StatCard
               label="Pending Withdrawals"
-              value={withdrawals.length}
+              value={withdrawals?.length ?? 0}
               link="/admin/crypto"
-              highlight={withdrawals.length > 0}
+              highlight={(withdrawals?.length ?? 0) > 0}
             />
             <StatCard
               label="Credited Today"
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                     <div>
                       <p className="text-sm text-white">{market.question.slice(0, 60)}...</p>
                       <p className="text-xs text-mist mt-1">
-                        {market.category} | {market.positionCount} positions | {market.symbol}{market.totalStaked.toLocaleString()} staked
+                        {market.category} | {market.positionCount ?? 0} positions | {market.symbol}{(market.totalStaked ?? 0).toLocaleString()} staked
                       </p>
                     </div>
                     <div className="text-right">
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {deposits.length > 0 && (
+          {(deposits?.length ?? 0) > 0 && (
             <div className="border border-white/10 bg-charcoal/60 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs uppercase tracking-[0.4em] text-mist">Pending Deposits</h2>
