@@ -23,6 +23,9 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 │   ├── markets/           # Markets directory and detail pages
 │   ├── wallet/            # Wallet dashboard (balances, portfolio, deposits)
 │   ├── account/           # User profile and settings
+│   ├── country/           # Countries listing and country-specific pages
+│   │   ├── page.tsx       # All countries grouped by region
+│   │   └── [country]/     # Dynamic country-specific markets
 │   └── category/[category]/ # Dynamic category-specific pages
 ├── components/            # Reusable UI components
 │   ├── Navbar.tsx         # Main navigation with auth state
@@ -38,7 +41,8 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 │   │   ├── types.ts       # TypeScript types for API responses
 │   │   └── responseHelpers.ts # Safe API response extraction utilities
 │   ├── hooks/
-│   │   ├── useMarkets.ts  # Markets, market detail, order book hooks
+│   │   ├── useMarkets.ts  # Markets, market detail, order book hooks (supports country filter)
+│   │   ├── useCountries.ts # Countries list (fallback to static data if API unavailable)
 │   │   ├── useTrading.ts  # Trade preview and execution
 │   │   ├── useWallet.ts   # Balances, transactions, portfolio, deposits
 │   │   ├── useProfile.ts  # User profile management

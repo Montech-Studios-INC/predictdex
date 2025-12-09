@@ -7,6 +7,7 @@ import type { Market, MarketCategory, OrderBookResponse, TradesResponse } from "
 
 interface UseMarketsParams {
   category?: MarketCategory | null;
+  country?: string | null;
   limit?: number;
   offset?: number;
 }
@@ -19,7 +20,7 @@ interface UseMarketsReturn {
   refetch: () => Promise<void>;
 }
 
-export function useMarkets({ category, limit = 20, offset = 0 }: UseMarketsParams = {}): UseMarketsReturn {
+export function useMarkets({ category, country, limit = 20, offset = 0 }: UseMarketsParams = {}): UseMarketsReturn {
   const [markets, setMarkets] = useState<Market[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +32,7 @@ export function useMarkets({ category, limit = 20, offset = 0 }: UseMarketsParam
     try {
       const response = await apiClient.getMarkets({
         category: category || undefined,
+        country: country || undefined,
         status: "open",
         limit,
         offset,
@@ -44,7 +46,7 @@ export function useMarkets({ category, limit = 20, offset = 0 }: UseMarketsParam
     } finally {
       setIsLoading(false);
     }
-  }, [category, limit, offset]);
+  }, [category, country, limit, offset]);
 
   useEffect(() => {
     fetchMarkets();

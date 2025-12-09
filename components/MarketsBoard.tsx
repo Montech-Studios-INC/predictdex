@@ -7,26 +7,29 @@ import { useMarkets } from "@/lib/hooks/useMarkets";
 import type { MarketCategory } from "@/lib/api/types";
 
 type Props = {
-  title: string;
+  title?: string;
   limit?: number;
   offset?: number;
   description?: string;
   showFilters?: boolean;
   initialCategory?: MarketCategory | null;
+  initialCountry?: string | null;
 };
 
 export default function MarketsBoard({
-  title,
+  title = "Markets",
   limit = 20,
   offset = 0,
   description,
   showFilters = true,
   initialCategory = null,
+  initialCountry = null,
 }: Props) {
   const [categoryFilter, setCategoryFilter] = useState<MarketCategory | null>(initialCategory);
 
   const { markets, isLoading, error } = useMarkets({
     category: categoryFilter,
+    country: initialCountry,
     limit,
     offset,
   });

@@ -2,6 +2,18 @@ export type MarketStatus = 'draft' | 'open' | 'closed' | 'resolved';
 export type MarketCategory = 'Politics' | 'Civics' | 'Sports' | 'Culture';
 export type CurrencyCode = 'ZAR' | 'NGN' | 'KES' | 'GHS' | 'EGP' | 'TZS' | 'UGX' | 'ZMW' | 'XOF' | 'XAF' | 'MAD' | 'ETH' | 'USDC' | 'USDT';
 
+export interface Country {
+  code: string;
+  name: string;
+  slug: string;
+  region: string;
+  flagEmoji: string;
+}
+
+export interface CountriesResponse {
+  countries: Country[];
+}
+
 export interface Market {
   id: string;
   slug: string;

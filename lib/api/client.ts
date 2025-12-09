@@ -21,6 +21,8 @@ import type {
   MarketCategory,
   MarketStatus,
   CurrencyCode,
+  Country,
+  CountriesResponse,
   AdminMarketCreate,
   AdminMarketUpdate,
   AdminPriceUpdate,
@@ -152,10 +154,15 @@ class ApiClient {
     return { success: true };
   }
 
+  async getCountries(): Promise<CountriesResponse> {
+    return this.request('/markets/countries');
+  }
+
   async getMarkets(params?: {
     category?: MarketCategory;
     status?: MarketStatus;
     currency?: CurrencyCode;
+    country?: string;
     limit?: number;
     offset?: number;
   }): Promise<MarketsResponse> {
@@ -163,6 +170,7 @@ class ApiClient {
     if (params?.category) searchParams.set('category', params.category);
     if (params?.status) searchParams.set('status', params.status);
     if (params?.currency) searchParams.set('currency', params.currency);
+    if (params?.country) searchParams.set('country', params.country);
     if (params?.limit !== undefined) searchParams.set('limit', params.limit.toString());
     if (params?.offset !== undefined) searchParams.set('offset', params.offset.toString());
 
