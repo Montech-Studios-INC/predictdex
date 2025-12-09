@@ -119,7 +119,7 @@ export default function AdminCryptoPage() {
             activeTab === "deposits" ? "border-gold text-gold" : "border-white/10 text-mist hover:text-white"
           }`}
         >
-          Deposits ({deposits.length})
+          Deposits ({deposits?.length ?? 0})
         </button>
         <button
           onClick={() => setActiveTab("withdrawals")}
@@ -127,7 +127,7 @@ export default function AdminCryptoPage() {
             activeTab === "withdrawals" ? "border-gold text-gold" : "border-white/10 text-mist hover:text-white"
           }`}
         >
-          Withdrawals ({withdrawals.length})
+          Withdrawals ({withdrawals?.length ?? 0})
         </button>
       </div>
 
@@ -146,7 +146,7 @@ export default function AdminCryptoPage() {
       ) : activeTab === "deposits" ? (
         <div className="border border-white/10 bg-charcoal/60 p-6">
           <h2 className="text-xs uppercase tracking-[0.4em] text-mist mb-4">Pending Deposits</h2>
-          {deposits.length === 0 ? (
+          {!deposits || deposits.length === 0 ? (
             <div className="text-center py-8 text-mist">No pending deposits</div>
           ) : (
             <div className="space-y-3">
@@ -183,7 +183,7 @@ export default function AdminCryptoPage() {
       ) : (
         <div className="border border-white/10 bg-charcoal/60 p-6">
           <h2 className="text-xs uppercase tracking-[0.4em] text-mist mb-4">Pending Withdrawals</h2>
-          {withdrawals.length === 0 ? (
+          {!withdrawals || withdrawals.length === 0 ? (
             <div className="text-center py-8 text-mist">No pending withdrawals</div>
           ) : (
             <div className="space-y-3">
