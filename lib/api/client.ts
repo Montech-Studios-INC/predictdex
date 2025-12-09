@@ -83,7 +83,23 @@ class ApiClient {
       throw new Error(error.message || `HTTP error ${response.status}`);
     }
 
-    return response.json();
+    const contentLength = response.headers.get('content-length');
+    const contentType = response.headers.get('content-type');
+    
+    if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
+      return {} as T;
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {} as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return {} as T;
+    }
   }
 
   async requestOtp(email: string): Promise<OtpRequestResponse> {
@@ -123,11 +139,15 @@ class ApiClient {
   }
 
   async logout(): Promise<{ success: boolean }> {
-    const response = await this.request<{ success: boolean }>('/auth/logout', {
-      method: 'POST',
-    });
-    this.setToken(null);
-    return response;
+    try {
+      await this.request<{ success: boolean }>('/auth/logout', {
+        method: 'POST',
+      });
+    } catch {
+    } finally {
+      this.setToken(null);
+    }
+    return { success: true };
   }
 
   async getMarkets(params?: {

@@ -103,9 +103,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        const token = apiClient.getToken();
+        let token = apiClient.getToken();
+        
+        if (!token && typeof window !== 'undefined') {
+          token = localStorage.getItem('auth_token');
+          if (token) {
+            apiClient.setToken(token);
+          }
+        }
+        
         if (!token) {
-          set({ user: null, isAuthenticated: false });
+          set({ user: null, isAuthenticated: false, isLoading: false });
           return;
         }
 
