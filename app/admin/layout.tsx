@@ -55,15 +55,21 @@ export default function AdminLayout({
     return null;
   }
 
-  if (user?.role !== "admin") {
+  if (!user || user.role !== "admin") {
     return (
       <div className="min-h-screen bg-midnight flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <p className="text-red-400 text-lg">Access Denied</p>
           <p className="mt-2 text-mist">You do not have permission to access this area.</p>
+          <p className="mt-4 text-xs text-mist">
+            Your current role: <span className="text-gold">{user?.role || "user"}</span>
+          </p>
+          <p className="mt-2 text-xs text-mist">
+            Contact your backend admin to grant admin access to your account.
+          </p>
           <Link
             href="/"
-            className="mt-4 inline-block text-gold hover:text-white text-sm uppercase tracking-widest"
+            className="mt-6 inline-block text-gold hover:text-white text-sm uppercase tracking-widest"
           >
             Return Home
           </Link>
