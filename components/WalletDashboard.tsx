@@ -149,13 +149,13 @@ export default function WalletDashboard() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.35em]">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex overflow-x-auto gap-2 sm:gap-3 text-xs uppercase tracking-[0.2em] sm:tracking-[0.35em] pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`border px-4 py-2 ${
+            className={`border px-3 sm:px-4 py-3 whitespace-nowrap min-w-[80px] ${
               activeTab === tab.key
                 ? "border-gold bg-gold/10 text-gold"
                 : "border-white/10 text-mist hover:text-white"
@@ -167,12 +167,12 @@ export default function WalletDashboard() {
       </div>
 
       {activeTab === "balances" && (
-        <div className="border border-white/10 bg-charcoal/60 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-xs uppercase tracking-[0.4em] text-mist">Available Balances</p>
+        <div className="border border-white/10 bg-charcoal/60 p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">Available Balances</p>
             <button
               onClick={() => refetchBalances()}
-              className="text-xs uppercase tracking-widest text-gold hover:text-white"
+              className="text-xs uppercase tracking-widest text-gold hover:text-white px-3 py-2"
             >
               Refresh
             </button>
@@ -189,16 +189,16 @@ export default function WalletDashboard() {
               <p className="mt-2 text-xs text-mist">Deposit crypto to start trading</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
               {balances.map((balance) => (
                 <div
                   key={balance.currency}
                   className="border border-white/10 bg-white/5 px-4 py-4"
                 >
-                  <p className="text-xs uppercase tracking-[0.4em] text-mist">
+                  <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">
                     {balance.currency}
                   </p>
-                  <p className="mt-2 text-2xl font-semibold text-white">
+                  <p className="mt-2 text-xl sm:text-2xl font-semibold text-white">
                     {formatCurrency(balance.available, balance.currency)}
                   </p>
                   {balance.reserved > 0 && (
@@ -236,7 +236,7 @@ export default function WalletDashboard() {
           ) : (
             <div className="space-y-4">
               {portfolio.summaryByCurrency.length > 0 && (
-                <div className="grid gap-4 sm:grid-cols-3 mb-6">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                   <div className="border border-white/10 bg-white/5 px-4 py-3">
                     <p className="text-xs uppercase tracking-[0.4em] text-mist">Total Stake</p>
                     <p className="text-xl font-semibold text-gold">
@@ -260,7 +260,7 @@ export default function WalletDashboard() {
                   </div>
                 </div>
               )}
-              <div className="overflow-x-auto">
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-xs uppercase tracking-[0.35em] text-mist">
                     <tr className="text-left">
@@ -294,21 +294,45 @@ export default function WalletDashboard() {
                   </tbody>
                 </table>
               </div>
+              <div className="sm:hidden space-y-3">
+                {portfolio.rows.map((row) => (
+                  <Link
+                    key={row.position.id}
+                    href={`/markets/${row.position.marketSlug || row.position.marketId}`}
+                    className="block border border-white/10 bg-white/5 p-4"
+                  >
+                    <p className="text-sm text-white line-clamp-2 mb-3">
+                      {row.position.marketQuestion || "Market"}
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={row.position.outcome === "YES" ? "text-gold" : "text-electric"}>
+                        {row.position.outcome} @ {((row.position.avgPrice || row.position.price) * 100).toFixed(1)}%
+                      </span>
+                      <span className="text-mist">{row.position.shares.toFixed(2)} shares</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="text-mist">Value: ${row.markPayout.toFixed(2)}</span>
+                      <span className={row.markProfit >= 0 ? "text-green-400" : "text-red-400"}>
+                        {row.markProfit >= 0 ? "+" : ""}${row.markProfit.toFixed(2)}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>
       )}
 
       {activeTab === "deposit" && (
-        <div className="border border-white/10 bg-charcoal/60 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-xs uppercase tracking-[0.4em] text-mist">Crypto Deposit Addresses</p>
-            <div className="flex items-center gap-4">
+        <div className="border border-white/10 bg-charcoal/60 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">Crypto Deposit Addresses</p>
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
               {prices && (
-                <div className="flex items-center gap-4 text-xs text-mist">
+                <div className="flex items-center gap-2 sm:gap-4 text-xs text-mist">
                   <span>ETH: <span className="text-gold">${prices.ETH.toLocaleString()}</span></span>
-                  <span>USDC: <span className="text-gold">${prices.USDC.toFixed(2)}</span></span>
-                  <span>USDT: <span className="text-gold">${prices.USDT.toFixed(2)}</span></span>
+                  <span className="hidden sm:inline">USDC: <span className="text-gold">${prices.USDC.toFixed(2)}</span></span>
                 </div>
               )}
               <button
@@ -317,7 +341,7 @@ export default function WalletDashboard() {
                   refetchBalances();
                   toast("Refreshing deposits...", "success");
                 }}
-                className="text-xs uppercase tracking-widest text-gold hover:text-white"
+                className="text-xs uppercase tracking-widest text-gold hover:text-white px-3 py-2"
               >
                 Refresh
               </button>
@@ -333,7 +357,7 @@ export default function WalletDashboard() {
             <p className="text-mist">Unable to load deposit addresses. Please try clicking Refresh.</p>
           ) : (
             <div className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
                 {Object.entries(addresses).map(([currency, data]) => {
                   const normalizedCurrency = currency.toUpperCase();
                   const minDeposit = MINIMUM_DEPOSITS[normalizedCurrency];
@@ -479,15 +503,15 @@ export default function WalletDashboard() {
       )}
 
       {activeTab === "withdraw" && (
-        <div className="border border-white/10 bg-charcoal/60 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-xs uppercase tracking-[0.4em] text-mist">Withdraw Crypto</p>
+        <div className="border border-white/10 bg-charcoal/60 p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">Withdraw Crypto</p>
             <button
               onClick={() => {
                 refetchWithdrawals();
                 refetchBalances();
               }}
-              className="text-xs uppercase tracking-widest text-gold hover:text-white"
+              className="text-xs uppercase tracking-widest text-gold hover:text-white px-3 py-2"
             >
               Refresh
             </button>
@@ -512,10 +536,10 @@ export default function WalletDashboard() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               <form onSubmit={handleWithdrawSubmit} className="space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-[0.4em] text-mist block mb-2">Token</label>
+                  <label className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist block mb-2">Token</label>
                   <div className="flex gap-2">
                     {(["ETH", "USDC", "USDT"] as WithdrawToken[]).map((token) => {
                       const { available } = getBalanceForToken(token);
@@ -528,15 +552,15 @@ export default function WalletDashboard() {
                             setWithdrawToken(token);
                             setWithdrawAmount("");
                           }}
-                          className={`flex-1 border p-3 transition-all ${
+                          className={`flex-1 border p-2.5 sm:p-3 transition-all ${
                             withdrawToken === token
                               ? "border-gold bg-gold/10 text-gold"
                               : "border-white/10 text-mist hover:text-white hover:border-white/30"
                           }`}
                         >
-                          <p className="text-sm font-medium">{token}</p>
-                          <p className="text-xs mt-1">
-                            {formatCryptoAmount(available, token)} available
+                          <p className="text-xs sm:text-sm font-medium">{token}</p>
+                          <p className="text-[10px] sm:text-xs mt-1 truncate">
+                            {formatCryptoAmount(available, token)}
                           </p>
                         </button>
                       );
@@ -562,10 +586,11 @@ export default function WalletDashboard() {
                       )}
 
                       <div>
-                        <label className="text-xs uppercase tracking-[0.4em] text-mist block mb-2">Amount</label>
+                        <label className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist block mb-2">Amount</label>
                         <div className="relative">
                           <input
                             type="number"
+                            inputMode="decimal"
                             step="any"
                             min={tokenLimits?.min || 0}
                             max={Math.min(available, tokenLimits?.remaining || available)}

@@ -58,42 +58,42 @@ export default function MarketDetail({ market }: Props) {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
-        <div className="border border-white/10 bg-charcoal/70 p-6">
-          <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.3em] text-mist">
-            <span className={`border px-3 py-1 ${
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+      <div className="space-y-4 sm:space-y-6 lg:col-span-2">
+        <div className="border border-white/10 bg-charcoal/70 p-4 sm:p-6">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-mist">
+            <span className={`border px-3 py-1.5 ${
               market.status === "open" 
                 ? "border-green-500/40 text-green-400" 
                 : "border-yellow-500/40 text-yellow-400"
             }`}>
               {market.status}
             </span>
-            <span className="border border-electric/40 px-3 py-1 text-electric">
+            <span className="border border-electric/40 px-3 py-1.5 text-electric">
               {market.category}
             </span>
             <span className="text-gold">{market.currency}</span>
           </div>
-          <h1 className="mt-6 text-3xl font-semibold text-white">{market.question}</h1>
+          <h1 className="mt-4 sm:mt-6 text-xl sm:text-3xl font-semibold text-white">{market.question}</h1>
           {market.description && (
-            <p className="mt-4 text-sm text-mist">{market.description}</p>
+            <p className="mt-3 sm:mt-4 text-sm text-mist">{market.description}</p>
           )}
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.4em] text-mist">YES PRICE</p>
-              <p className="text-3xl font-semibold text-gold">
+          <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-3">
+            <div className="border border-white/10 bg-white/5 px-3 sm:px-4 py-3">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">YES</p>
+              <p className="text-xl sm:text-3xl font-semibold text-gold">
                 {(market.yesPrice * 100).toFixed(0)}%
               </p>
             </div>
-            <div className="border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.4em] text-mist">NO PRICE</p>
-              <p className="text-3xl font-semibold text-electric">
+            <div className="border border-white/10 bg-white/5 px-3 sm:px-4 py-3">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">NO</p>
+              <p className="text-xl sm:text-3xl font-semibold text-electric">
                 {(market.noPrice * 100).toFixed(0)}%
               </p>
             </div>
-            <div className="border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.4em] text-mist">VOLUME</p>
-              <p className="text-3xl font-semibold text-white">
+            <div className="border border-white/10 bg-white/5 px-3 sm:px-4 py-3">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">VOL</p>
+              <p className="text-xl sm:text-3xl font-semibold text-white">
                 {formatVolume(market.volume)}
               </p>
             </div>
@@ -142,9 +142,9 @@ export default function MarketDetail({ market }: Props) {
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="border border-white/10 bg-slate/60 p-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-mist">Trade</p>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="border border-white/10 bg-slate/60 p-4 sm:p-6">
+          <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">Trade</p>
           
           {market.status !== "open" ? (
             <div className="mt-4 text-center py-6">
@@ -153,10 +153,10 @@ export default function MarketDetail({ market }: Props) {
             </div>
           ) : (
             <>
-              <div className="mt-4 flex gap-3 text-sm uppercase tracking-[0.3em]">
+              <div className="mt-4 flex gap-2 sm:gap-3 text-sm uppercase tracking-[0.2em] sm:tracking-[0.3em]">
                 <button
                   onClick={() => setDirection("YES")}
-                  className={`flex-1 border px-3 py-2 ${
+                  className={`flex-1 border px-3 py-3 ${
                     direction === "YES"
                       ? "border-gold bg-gold/10 text-gold"
                       : "border-white/10 text-mist hover:text-white"
@@ -166,7 +166,7 @@ export default function MarketDetail({ market }: Props) {
                 </button>
                 <button
                   onClick={() => setDirection("NO")}
-                  className={`flex-1 border px-3 py-2 ${
+                  className={`flex-1 border px-3 py-3 ${
                     direction === "NO"
                       ? "border-electric bg-electric/10 text-electric"
                       : "border-white/10 text-mist hover:text-white"
@@ -176,14 +176,15 @@ export default function MarketDetail({ market }: Props) {
                 </button>
               </div>
 
-              <label className="mt-6 block text-xs uppercase tracking-[0.4em] text-mist">
+              <label className="mt-4 sm:mt-6 block text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">
                 Stake ({market.currency})
                 <input
                   type="number"
+                  inputMode="decimal"
                   min={1}
                   value={amount}
                   onChange={(event) => setAmount(Number(event.target.value))}
-                  className="mt-2 w-full border border-white/10 bg-transparent px-4 py-3 text-white focus:border-royal focus:outline-none"
+                  className="mt-2 w-full border border-white/10 bg-transparent px-4 py-3 text-base text-white focus:border-royal focus:outline-none"
                 />
               </label>
 
@@ -237,7 +238,7 @@ export default function MarketDetail({ market }: Props) {
               <button
                 onClick={handleTrade}
                 disabled={isExecuting || amount <= 0}
-                className="mt-6 w-full border border-white/10 bg-royal/70 px-4 py-3 text-sm uppercase tracking-[0.35em] text-white hover:bg-royal disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="mt-4 sm:mt-6 w-full border border-white/10 bg-royal/70 px-4 py-4 text-sm uppercase tracking-[0.2em] sm:tracking-[0.35em] text-white hover:bg-royal disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isExecuting ? "Processing..." : isAuthenticated ? "Confirm Trade" : "Sign In to Trade"}
               </button>

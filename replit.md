@@ -175,12 +175,44 @@ npx playwright test e2e/aggressive-tests.spec.ts
 - `app/api/health/route.ts` - Health check endpoint
 - `docs/AGGRESSIVE_TEST_RISK_REPORT.md` - Security risk analysis
 
+## Mobile Responsiveness (December 10, 2025)
+
+### Mobile Navigation
+- **Hamburger menu** on screens < 1024px (lg breakpoint)
+- **Slide-out drawer** with full-screen overlay
+- Closes automatically on navigation or logo click
+- Body scroll locked when drawer is open
+
+### Mobile-First Layouts
+- **Single-column grids** on mobile, expanding to 2-3 columns on larger screens
+- **Stacked trading form** on market detail pages
+- **Card-based portfolio** view on mobile (replaces table)
+- **Horizontal scrolling tabs** for wallet dashboard
+
+### Touch Targets
+- Minimum **44px touch targets** on all interactive elements
+- Increased button padding (`py-3` minimum)
+- Proper spacing between tappable items
+
+### Form Improvements
+- **inputMode** attributes for proper mobile keyboards:
+  - `inputMode="decimal"` for number inputs
+  - `inputMode="numeric"` for OTP codes
+  - `inputMode="email"` for email fields
+- **autoComplete="one-time-code"** for OTP input
+- Sticky submit buttons on longer forms
+
+### CSS Utilities
+- `.scrollbar-hide` - Hides scrollbars on horizontal scroll areas
+- Mobile base font size adjustment (15px on < 640px screens)
+
 ## Notes
 - Frontend connected to production API server
 - Trading requires authentication
 - Wallet deposit addresses generated per-user
 - Crypto deposits only (fiat deferred)
 - Optimized for Replit's iframe preview environment
+- **Fully responsive** - works on mobile, tablet, and desktop
 
 ## API Response Handling
 The frontend uses helper functions in `lib/api/responseHelpers.ts` to safely handle API responses that may return either:

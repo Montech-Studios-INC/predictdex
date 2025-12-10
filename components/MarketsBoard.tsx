@@ -39,9 +39,9 @@ export default function MarketsBoard({
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 sm:space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-mist">{title}</p>
+        <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">{title}</p>
         {description && <p className="mt-2 text-sm text-mist">{description}</p>}
       </div>
 
@@ -52,7 +52,7 @@ export default function MarketsBoard({
       )}
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
@@ -61,14 +61,14 @@ export default function MarketsBoard({
           ))}
         </div>
       ) : error ? (
-        <div className="border border-red-500/20 bg-red-900/10 p-6 text-center">
+        <div className="border border-red-500/20 bg-red-900/10 p-4 sm:p-6 text-center">
           <p className="text-sm text-red-400">{error}</p>
           <p className="mt-2 text-xs text-mist">Unable to load markets from the server</p>
         </div>
       ) : markets.length === 0 ? (
         <p className="text-sm text-mist">No markets available for this filter.</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {markets.map((market) => (
             <MarketCard key={market.id} market={market} />
           ))}

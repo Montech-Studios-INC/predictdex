@@ -31,3 +31,18 @@ body {
 .card-hover {
   @apply transition duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01];
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+}
