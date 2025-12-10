@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { useBalances, usePortfolio, useTransactions, useCryptoDeposits, useWithdrawals } from "@/lib/hooks/useWallet";
@@ -8,8 +8,13 @@ import { useCryptoPrices } from "@/lib/hooks/useCryptoPrices";
 import { formatCurrency, formatCryptoAmount, formatDateTime, truncateAddress, getExplorerTxUrl } from "@/lib/utils";
 import { toast } from "./Toast";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
+import dynamic from "next/dynamic";
 import type { WithdrawalRequest } from "@/lib/api/types";
+
+const QRCodeSVG = dynamic(() => import("qrcode.react").then(mod => ({ default: mod.QRCodeSVG })), {
+  loading: () => <div className="w-48 h-48 bg-white/10 animate-pulse" />,
+  ssr: false,
+});
 
 const MINIMUM_DEPOSITS: Record<string, { amount: number; usdEquivalent: string }> = {
   ETH: { amount: 0.001, usdEquivalent: "~$3.50" },
@@ -69,27 +74,32 @@ export default function WalletDashboard() {
     );
   }
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "balances", label: "Balances" },
-    { key: "portfolio", label: "Positions" },
-    { key: "deposit", label: "Deposit" },
-    { key: "withdraw", label: "Withdraw" },
-    { key: "history", label: "History" },
-  ];
+  const tabs = useMemo(() => [
+    { key: "balances" as Tab, label: "Balances" },
+    { key: "portfolio" as Tab, label: "Positions" },
+    { key: "deposit" as Tab, label: "Deposit" },
+    { key: "withdraw" as Tab, label: "Withdraw" },
+    { key: "history" as Tab, label: "History" },
+  ], []);
 
-  const getBalanceForToken = (token: string) => {
+  const getBalanceForToken = useCallback((token: string) => {
     const balance = balances.find(b => b.currency === token);
     return balance ? { available: balance.available, reserved: balance.reserved } : { available: 0, reserved: 0 };
-  };
+  }, [balances]);
 
-  const feeRate = withdrawLimits?.feeRate ?? 0.01;
-  const feePercentage = withdrawLimits?.feePercentage ?? "1%";
-  const calculateFee = (amount: number) => amount * feeRate;
-  const calculateNet = (amount: number) => amount - calculateFee(amount);
+  const feeRate = useMemo(() => withdrawLimits?.feeRate ?? 0.01, [withdrawLimits?.feeRate]);
+  const feePercentage = useMemo(() => withdrawLimits?.feePercentage ?? "1%", [withdrawLimits?.feePercentage]);
+  const calculateFee = useCallback((amount: number) => amount * feeRate, [feeRate]);
+  const calculateNet = useCallback((amount: number) => amount - calculateFee(amount), [calculateFee]);
 
-  const isValidEthAddress = (address: string) => /^0x[a-fA-F0-9]{40}$/.test(address);
+  const isValidEthAddress = useCallback((address: string) => /^0x[a-fA-F0-9]{40}$/.test(address), []);
 
-  const handleWithdrawSubmit = async (e: React.FormEvent) => {
+  const copyToClipboard = useCallback((text: string) => {
+    navigator.clipboard.writeText(text);
+    toast("Address copied to clipboard", "success");
+  }, []);
+
+  const handleWithdrawSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     const amount = parseFloat(withdrawAmount);
@@ -141,12 +151,7 @@ export default function WalletDashboard() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast("Address copied to clipboard", "success");
-  };
+  }, [withdrawAmount, withdrawAddress, withdrawToken, withdrawLimits, getBalanceForToken, submitWithdrawal, refetchBalances, refetchWithdrawals]);
 
   return (
     <div className="space-y-6 sm:space-y-8">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { memo } from "react";
 import type { Market } from "@/lib/api/types";
 
 type Props = {
@@ -6,7 +7,7 @@ type Props = {
   compact?: boolean;
 };
 
-export default function MarketCard({ market, compact = false }: Props) {
+function MarketCard({ market, compact = false }: Props) {
   const formatVolume = (volume: number, symbol: string): string => {
     if (volume >= 1000000) {
       return `${symbol}${(volume / 1000000).toFixed(1)}M`;
@@ -65,3 +66,5 @@ export default function MarketCard({ market, compact = false }: Props) {
     </Link>
   );
 }
+
+export default memo(MarketCard);

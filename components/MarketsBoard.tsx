@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import MarketCard from "./MarketCard";
 import CategoryFilter from "./CategoryFilter";
+import { MarketCardSkeleton } from "./Skeleton";
 import { useMarkets } from "@/lib/hooks/useMarkets";
 import type { MarketCategory } from "@/lib/api/types";
 
@@ -16,7 +17,7 @@ type Props = {
   initialCountry?: string | null;
 };
 
-export default function MarketsBoard({
+function MarketsBoard({
   title = "Markets",
   limit = 20,
   offset = 0,
@@ -54,10 +55,7 @@ export default function MarketsBoard({
       {isLoading ? (
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="h-48 animate-pulse border border-white/5 bg-charcoal/40"
-            />
+            <MarketCardSkeleton key={i} />
           ))}
         </div>
       ) : error ? (
@@ -77,3 +75,5 @@ export default function MarketsBoard({
     </section>
   );
 }
+
+export default memo(MarketsBoard);
