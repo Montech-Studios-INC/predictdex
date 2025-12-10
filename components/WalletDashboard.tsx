@@ -29,7 +29,7 @@ export default function WalletDashboard() {
   const { portfolio, isLoading: loadingPortfolio } = usePortfolio();
   const { transactions, isLoading: loadingTransactions } = useTransactions({ limit: 20 });
   const { addresses, pending, isLoading: loadingDeposits, refetch: refetchDeposits } = useCryptoDeposits();
-  const { limits: withdrawLimits, withdrawals, isLoading: loadingWithdrawals, submitWithdrawal, refetch: refetchWithdrawals } = useWithdrawals();
+  const { limits: withdrawLimits, withdrawals, isLoading: loadingWithdrawals, error: withdrawalsError, submitWithdrawal, refetch: refetchWithdrawals } = useWithdrawals();
   const { prices, convertFromUsd, getPrice } = useCryptoPrices();
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
   
@@ -498,6 +498,18 @@ export default function WalletDashboard() {
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="h-20 bg-white/5 rounded"></div>
               ))}
+            </div>
+          ) : withdrawalsError || !withdrawLimits ? (
+            <div className="border border-red-500/20 bg-red-900/10 p-6 text-center">
+              <p className="text-red-400 mb-4">
+                {withdrawalsError || "Unable to load withdrawal limits. Please try again."}
+              </p>
+              <button
+                onClick={() => refetchWithdrawals()}
+                className="border border-gold bg-gold/10 px-6 py-2 text-sm uppercase tracking-widest text-gold hover:bg-gold/20 transition-colors"
+              >
+                Retry
+              </button>
             </div>
           ) : (
             <div className="grid gap-6 lg:grid-cols-2">
