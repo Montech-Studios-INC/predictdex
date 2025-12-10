@@ -347,16 +347,23 @@ export interface SettlementPreview {
 
 export interface AdminDeposit {
   id: string;
-  userId: string;
-  userEmail?: string;
   txHash: string;
   token: string;
   amount: number;
   confirmations: number;
   requiredConfirmations: number;
+  isThresholdMet: boolean;
   status: 'pending' | 'credited' | 'failed';
+  user: {
+    id: string;
+    email: string | null;
+    walletAddress: string | null;
+  };
   createdAt: string;
   creditedAt?: string;
+  // Legacy fields for backward compatibility
+  userId?: string;
+  userEmail?: string;
 }
 
 export interface AdminDepositStats {

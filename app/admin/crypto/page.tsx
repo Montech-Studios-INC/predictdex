@@ -165,16 +165,21 @@ export default function AdminCryptoPage() {
                       </span>
                     </div>
                     <p className="text-xs text-mist mt-1">
-                      TX: {truncateAddress(deposit.txHash, 12)} | User: {deposit.userEmail || (deposit.userId ? deposit.userId.slice(0, 8) : 'Unknown')}
+                      TX: {truncateAddress(deposit.txHash, 12)} | User: {deposit.user?.email || deposit.user?.walletAddress || deposit.userEmail || 'Unknown'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleCreditDeposit(deposit.id)}
-                    disabled={processingId === deposit.id || deposit.confirmations < deposit.requiredConfirmations}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {processingId === deposit.id ? "Processing..." : "Credit"}
-                  </button>
+                  {deposit.isThresholdMet && deposit.status === 'pending' && (
+                    <button
+                      onClick={() => handleCreditDeposit(deposit.id)}
+                      disabled={processingId === deposit.id}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {processingId === deposit.id ? "Processing..." : "Credit"}
+                    </button>
+                  )}
+                  {!deposit.isThresholdMet && deposit.status === 'pending' && (
+                    <span className="text-xs text-yellow-400">Waiting for confirmations...</span>
+                  )}
                 </div>
               ))}
             </div>
