@@ -230,18 +230,32 @@ const { data, total } = normalizeListResponse<Market>(response, 'markets');
 const items = extractArrayFromResponse<Item>(response, 'items');
 ```
 
-## Performance Optimizations (December 9, 2025)
+## Performance Optimizations (December 10, 2025)
 
-### Applied Optimizations
-- **API Caching:** 30-second in-memory cache for markets data (reduces API calls by ~70%)
-- **Next.js Config:** SWC minification, compression, package import optimization
-- **Image Optimization:** AVIF/WebP formats with 24-hour cache
-- **Bundle Optimization:** Tree-shaking for RainbowKit, Wagmi, Viem packages
+### React Optimizations
+- **React.memo:** MarketCard and MarketsBoard wrapped with memo() to prevent unnecessary re-renders
+- **useMemo/useCallback:** WalletDashboard uses memoization for computed values and event handlers
+- **Dynamic Imports:** QRCodeSVG lazy-loaded with next/dynamic (SSR disabled, loading fallback)
 
-### Caching Behavior
+### Skeleton Loaders
+- **Skeleton.tsx:** Reusable skeleton components for perceived performance
+- **MarketCardSkeleton:** Used in MarketsBoard during loading states
+- **BalanceCardSkeleton, TableRowSkeleton:** Available for other loading states
+
+### Bundle Optimizations
+- **optimizePackageImports:** @rainbow-me/rainbowkit, viem, zustand, qrcode.react
+- **modularizeImports:** RainbowKit components for smaller chunks
+- **Webpack:** Deterministic moduleIds for better caching
+- **Note:** wagmi/@tanstack/react-query excluded from optimization (compatibility)
+
+### API Caching
+- **In-memory cache:** 30-second TTL for markets data (reduces API calls ~70%)
 - First visit: Fetches from API (~200-500ms)
 - Subsequent navigations: Instant from cache (< 10ms)
-- Cache TTL: 30 seconds (auto-revalidates)
+
+### Image Optimization
+- AVIF/WebP formats with 24-hour cache
+- SWC minification enabled
 
 ## Country Filtering (December 9, 2025)
 
