@@ -87,8 +87,32 @@ export function useTransactions(params?: {
     setError(null);
     try {
       const response = await apiClient.getTransactions(params);
-      const { data, total: totalCount } = normalizeListResponse<WalletTransaction>(response, 'transactions');
-      setTransactions(data);
+      interface RawTransaction {
+        id: string;
+        type: string;
+        amount: number;
+        currency: string;
+        symbol?: string;
+        description?: string;
+        status?: string;
+        txHash?: string;
+        hash?: string;
+        transactionHash?: string;
+        createdAt: string;
+      }
+      const { data: rawData, total: totalCount } = normalizeListResponse<RawTransaction>(response, 'transactions');
+      const mappedData: WalletTransaction[] = rawData.map((tx) => ({
+        id: tx.id,
+        type: tx.type as WalletTransaction['type'],
+        amount: tx.amount,
+        currency: tx.currency as CurrencyCode,
+        symbol: tx.symbol || tx.currency,
+        description: tx.description || '',
+        status: tx.status as WalletTransaction['status'],
+        txHash: tx.txHash || tx.hash || tx.transactionHash,
+        createdAt: tx.createdAt,
+      }));
+      setTransactions(mappedData);
       setTotal(totalCount);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load transactions");

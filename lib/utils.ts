@@ -16,17 +16,23 @@ export function formatCryptoAmount(amount: number, symbol: string): string {
   if (symbol === 'ETH') {
     if (amount === 0) return '0 ETH';
     if (Math.abs(amount) < 0.0001) {
-      return `${amount.toFixed(8).replace(/\.?0+$/, '')} ETH`;
+      const formatted = amount.toFixed(8);
+      const trimmed = formatted.replace(/0+$/, '').replace(/\.$/, '');
+      return `${trimmed || '0'} ETH`;
     }
-    if (Math.abs(amount) < 0.01) {
-      return `${amount.toFixed(6).replace(/\.?0+$/, '')} ETH`;
+    if (Math.abs(amount) < 1) {
+      const formatted = amount.toFixed(6);
+      const trimmed = formatted.replace(/0+$/, '').replace(/\.$/, '');
+      return `${trimmed || '0'} ETH`;
     }
-    return `${amount.toFixed(4).replace(/\.?0+$/, '')} ETH`;
+    return `${amount.toFixed(4)} ETH`;
   }
   if (symbol === 'USDC' || symbol === 'USDT') {
     if (amount === 0) return `0 ${symbol}`;
     if (Math.abs(amount) < 0.01) {
-      return `${amount.toFixed(6).replace(/\.?0+$/, '')} ${symbol}`;
+      const formatted = amount.toFixed(6);
+      const trimmed = formatted.replace(/0+$/, '').replace(/\.$/, '');
+      return `${trimmed || '0'} ${symbol}`;
     }
     return `${amount.toFixed(2)} ${symbol}`;
   }
