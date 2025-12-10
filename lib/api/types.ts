@@ -198,6 +198,7 @@ export interface WalletTransaction {
   symbol: string;
   description: string;
   status?: 'pending' | 'completed' | 'failed';
+  txHash?: string;
   createdAt: string;
 }
 

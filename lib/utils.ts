@@ -12,6 +12,38 @@ export function formatCurrency(amount: number, symbol: string): string {
   return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+export function formatCryptoAmount(amount: number, symbol: string): string {
+  if (symbol === 'ETH') {
+    if (amount === 0) return '0 ETH';
+    if (Math.abs(amount) < 0.0001) {
+      return `${amount.toFixed(8).replace(/\.?0+$/, '')} ETH`;
+    }
+    if (Math.abs(amount) < 0.01) {
+      return `${amount.toFixed(6).replace(/\.?0+$/, '')} ETH`;
+    }
+    return `${amount.toFixed(4).replace(/\.?0+$/, '')} ETH`;
+  }
+  if (symbol === 'USDC' || symbol === 'USDT') {
+    if (amount === 0) return `0 ${symbol}`;
+    if (Math.abs(amount) < 0.01) {
+      return `${amount.toFixed(6).replace(/\.?0+$/, '')} ${symbol}`;
+    }
+    return `${amount.toFixed(2)} ${symbol}`;
+  }
+  return `${amount} ${symbol}`;
+}
+
+export function getExplorerTxUrl(txHash: string, network: string = 'sepolia'): string {
+  const explorers: Record<string, string> = {
+    sepolia: 'https://sepolia.etherscan.io/tx/',
+    ethereum: 'https://etherscan.io/tx/',
+    polygon: 'https://polygonscan.com/tx/',
+    arbitrum: 'https://arbiscan.io/tx/',
+    bsc: 'https://bscscan.com/tx/',
+  };
+  return `${explorers[network] || explorers.sepolia}${txHash}`;
+}
+
 export function formatPercentage(value: number): string {
   return `${(value * 100).toFixed(0)}%`;
 }

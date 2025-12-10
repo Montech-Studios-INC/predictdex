@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { useBalances, usePortfolio, useTransactions, useCryptoDeposits } from "@/lib/hooks/useWallet";
 import { useCryptoPrices } from "@/lib/hooks/useCryptoPrices";
-import { formatCurrency, formatDateTime, truncateAddress } from "@/lib/utils";
+import { formatCurrency, formatCryptoAmount, formatDateTime, truncateAddress, getExplorerTxUrl } from "@/lib/utils";
 import { toast } from "./Toast";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
@@ -398,6 +398,7 @@ export default function WalletDashboard() {
                     <th className="border-b border-white/10 py-3">Currency</th>
                     <th className="border-b border-white/10 py-3">Status</th>
                     <th className="border-b border-white/10 py-3">Date</th>
+                    <th className="border-b border-white/10 py-3">TX</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -407,8 +408,8 @@ export default function WalletDashboard() {
                       <td className={`border-b border-white/5 py-3 ${
                         tx.type === "deposit" || tx.type === "trade_payout" ? "text-green-400" : "text-white"
                       }`}>
-                        {tx.type === "deposit" || tx.type === "trade_payout" ? "+" : "-"}
-                        {formatCurrency(tx.amount, tx.currency)}
+                        {tx.type === "deposit" || tx.type === "trade_payout" ? "+" : ""}
+                        {formatCryptoAmount(tx.amount, tx.currency)}
                       </td>
                       <td className="border-b border-white/5 py-3">{tx.currency}</td>
                       <td className={`border-b border-white/5 py-3 ${
@@ -419,6 +420,20 @@ export default function WalletDashboard() {
                       </td>
                       <td className="border-b border-white/5 py-3">
                         {formatDateTime(tx.createdAt)}
+                      </td>
+                      <td className="border-b border-white/5 py-3">
+                        {tx.txHash ? (
+                          <a 
+                            href={getExplorerTxUrl(tx.txHash)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-royal hover:text-gold transition-colors"
+                          >
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-mist/50">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
