@@ -28,13 +28,20 @@ export default function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    const resetOverflow = () => {
+      document.body.style.overflow = "";
+    };
+
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
+      window.addEventListener("beforeunload", resetOverflow);
     } else {
-      document.body.style.overflow = "";
+      resetOverflow();
     }
+    
     return () => {
-      document.body.style.overflow = "";
+      resetOverflow();
+      window.removeEventListener("beforeunload", resetOverflow);
     };
   }, [mobileMenuOpen]);
 
