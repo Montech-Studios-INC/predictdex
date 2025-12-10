@@ -408,7 +408,7 @@ export default function WalletDashboard() {
                       <td className={`border-b border-white/5 py-3 ${
                         tx.type === "deposit" || tx.type === "trade_payout" ? "text-green-400" : "text-white"
                       }`}>
-                        {tx.type === "deposit" || tx.type === "trade_payout" ? "+" : ""}
+                        {tx.type === "deposit" || tx.type === "trade_payout" ? "+" : "-"}
                         {formatCryptoAmount(tx.amount, tx.currency)}
                       </td>
                       <td className="border-b border-white/5 py-3">{tx.currency}</td>
