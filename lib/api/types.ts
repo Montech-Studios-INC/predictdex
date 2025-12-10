@@ -345,6 +345,12 @@ export interface SettlementPreview {
   losers: SettlementPreviewUser[];
 }
 
+export interface AdminDepositUser {
+  id: string;
+  email: string | null;
+  walletAddress: string | null;
+}
+
 export interface AdminDeposit {
   id: string;
   txHash: string;
@@ -354,16 +360,9 @@ export interface AdminDeposit {
   requiredConfirmations: number;
   isThresholdMet: boolean;
   status: 'pending' | 'credited' | 'failed';
-  user: {
-    id: string;
-    email: string | null;
-    walletAddress: string | null;
-  };
+  user: AdminDepositUser;
   createdAt: string;
   creditedAt?: string;
-  // Legacy fields for backward compatibility
-  userId?: string;
-  userEmail?: string;
 }
 
 export interface AdminDepositStats {

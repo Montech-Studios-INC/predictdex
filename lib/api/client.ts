@@ -274,53 +274,40 @@ class ApiClient {
   }
 
   async getAllDepositAddresses(): Promise<Record<string, { address: string; network: string }>> {
-    const response = await this.request<any>('/crypto/deposit-addresses');
+    interface DepositAddressItem { token: string; address: string }
+    interface ArrayResponse { addresses: DepositAddressItem[]; network: string; isTestnet?: boolean }
+    type RecordResponse = Record<string, { address: string; network: string }>;
     
-    // If response has addresses array (new API format from docs)
-    if (response.addresses && Array.isArray(response.addresses)) {
+    const response = await this.request<ArrayResponse | RecordResponse>('/crypto/deposit-addresses');
+    
+    // Handle array format: { addresses: [...], network: "..." }
+    const arrayResponse = response as ArrayResponse;
+    if (arrayResponse.addresses && Array.isArray(arrayResponse.addresses)) {
       const result: Record<string, { address: string; network: string }> = {};
-      response.addresses.forEach((addr: { token: string; address: string }) => {
+      for (const addr of arrayResponse.addresses) {
         result[addr.token] = { 
           address: addr.address, 
-          network: response.network || 'Ethereum Sepolia Testnet' 
+          network: arrayResponse.network || 'Ethereum Sepolia Testnet' 
         };
-      });
-      return result;
-    }
-    
-    // If response is already a Record with token keys (ETH, USDC, USDT)
-    // This was the original format the frontend expected
-    const result: Record<string, { address: string; network: string }> = {};
-    for (const key of Object.keys(response)) {
-      if (['ETH', 'USDC', 'USDT', 'eth', 'usdc', 'usdt'].includes(key)) {
-        const val = response[key];
-        if (val && typeof val === 'object' && val.address) {
-          result[key.toUpperCase()] = {
-            address: val.address,
-            network: val.network || 'Ethereum Sepolia Testnet'
-          };
-        }
       }
-    }
-    
-    // If we got results, return them
-    if (Object.keys(result).length > 0) {
       return result;
     }
     
-    // Fallback: return the response as-is if it looks like the expected format
-    return response as Record<string, { address: string; network: string }>;
+    // Handle record format: { ETH: {...}, USDC: {...}, USDT: {...} }
+    return response as RecordResponse;
   }
 
   async getPendingDeposits(): Promise<PendingDeposit[]> {
-    const response = await this.request<any>('/crypto/deposits/pending');
+    type WrappedResponse = { deposits: PendingDeposit[] };
     
-    // If response has deposits array
-    if (response.deposits && Array.isArray(response.deposits)) {
+    const response = await this.request<WrappedResponse | PendingDeposit[]>('/crypto/deposits/pending');
+    
+    // Handle wrapped format: { deposits: [...] }
+    if ('deposits' in response && Array.isArray(response.deposits)) {
       return response.deposits;
     }
     
-    // If response is already an array
+    // Handle direct array format
     if (Array.isArray(response)) {
       return response;
     }

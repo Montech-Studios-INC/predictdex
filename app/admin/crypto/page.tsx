@@ -165,7 +165,7 @@ export default function AdminCryptoPage() {
                       </span>
                     </div>
                     <p className="text-xs text-mist mt-1">
-                      TX: {truncateAddress(deposit.txHash, 12)} | User: {deposit.user?.email || deposit.user?.walletAddress || deposit.userEmail || 'Unknown'}
+                      TX: {truncateAddress(deposit.txHash, 12)} | User: {deposit.user?.email || deposit.user?.walletAddress || deposit.user?.id?.slice(0, 8) || 'Unknown'}
                     </p>
                   </div>
                   {deposit.isThresholdMet && deposit.status === 'pending' && (
@@ -213,7 +213,7 @@ export default function AdminCryptoPage() {
                         </span>
                       </div>
                       <p className="text-xs text-mist mt-1">
-                        To: {truncateAddress(withdrawal.toAddress, 12)} | User: {withdrawal.userEmail || (withdrawal.userId ? withdrawal.userId.slice(0, 8) : 'Unknown')}
+                        To: {truncateAddress(withdrawal.toAddress, 12)} | User: {withdrawal.userEmail || withdrawal.userId?.slice(0, 8) || 'Unknown'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
