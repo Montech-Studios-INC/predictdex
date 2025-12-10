@@ -1,0 +1,87 @@
+Enter AGGRESSIVE TESTING MODE.
+
+Your goal is to BREAK this system before real users do.
+
+Be adversarial, paranoid, and precise. Do not assume “normal” behavior. Focus on edge cases, invalid states, and abuse patterns.
+
+1) Enumerate Risk Areas
+Identify the most fragile and high-impact areas:
+- Authentication & sessions
+- Permissions / roles / tenant boundaries
+- Data creation / updates / deletes
+- Payments / contracts / money movement
+- External integrations (Stripe, email, SMS, storage, etc.)
+- Complex workflows and state machines (offers → contracts → deals, events → applications, etc.)
+
+For each area, list what can go wrong.
+
+2) Generate Aggressive Test Scenarios
+For every endpoint / mutation / critical function, design tests for:
+
+- Boundary values:
+  - min/max string lengths
+  - min/max numbers
+  - zero, negative, huge values
+  - empty arrays, huge arrays
+
+- Bad input shapes:
+  - missing required fields
+  - extra unexpected fields
+  - wrong types (string vs number vs object vs array)
+  - deeply nested objects, very large payloads
+
+- Auth & permissions:
+  - unauthenticated user calls
+  - wrong role (e.g., athlete calling brand-only actions)
+  - wrong tenant/org (cross-tenant data access attempts)
+  - expired or invalid tokens
+
+- State machine abuse:
+  - calling actions in the wrong state
+    (e.g., cancelling completed deals, signing already-cancelled contracts)
+  - double-submissions (click twice, send same mutation twice)
+  - race conditions (two conflicting actions at the same time)
+
+- Data integrity:
+  - foreign key IDs that don’t exist
+  - IDs from another tenant/org
+  - references to deleted/soft-deleted records
+
+- Security/robustness:
+  - injection-like inputs (weird characters, long strings)
+  - extremely large input sizes
+  - rapid repeated requests to the same endpoint
+
+3) Turn Scenarios into Concrete Tests
+For each scenario, define:
+
+- GIVEN: starting state (data in DB, user role, auth context)
+- WHEN: exact API call / GraphQL operation with variables
+- THEN: exact expected result:
+  - success shape OR
+  - specific error code/message
+  - no crash, no sensitive data leaked
+  - data is not corrupted or partially written
+
+4) Write the Actual Tests
+Using our test stack (e.g., Jest + Supertest or Jest + ApolloServerTestClient):
+
+- Implement tests for:
+  - happy path
+  - at least 3–5 aggressive edge cases per critical endpoint
+  - at least 2–3 abuse scenarios per critical workflow
+
+- Assert on:
+  - status codes / GraphQL `errors`
+  - response body structure
+  - key fields and invariants
+  - that forbidden actions are truly blocked
+
+5) Output
+Produce:
+- A list of all aggressive scenarios you designed.
+- The test code skeletons or full test implementations.
+- A short “risk report” calling out:
+  - any scenario we CANNOT currently handle safely,
+  - tests that are still missing,
+  - recommended fixes or safeguards.

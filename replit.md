@@ -162,13 +162,18 @@ npx playwright test --ui
 
 # Run specific test file
 npx playwright test e2e/flows.spec.ts
+
+# Run aggressive security tests
+npx playwright test e2e/aggressive-tests.spec.ts
 ```
 
 ### Test Files
 - `e2e/flows.spec.ts` - Main E2E test suite
+- `e2e/aggressive-tests.spec.ts` - Aggressive security testing (54 scenarios)
 - `e2e/README.md` - Testing documentation
 - `lib/api/audit.ts` - API endpoint auditor
 - `app/api/health/route.ts` - Health check endpoint
+- `docs/AGGRESSIVE_TEST_RISK_REPORT.md` - Security risk analysis
 
 ## Notes
 - Frontend connected to production API server
