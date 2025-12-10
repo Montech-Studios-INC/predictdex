@@ -1,3 +1,7 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -27,14 +31,6 @@ const nextConfig = {
   // Strict output for smaller builds
   output: 'standalone',
   
-  // Reduce bundle size
-  modularizeImports: {
-    '@rainbow-me/rainbowkit': {
-      transform: '@rainbow-me/rainbowkit/dist/{{member}}',
-      skipDefaultConversion: true,
-    },
-  },
-  
   // Webpack optimizations
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -56,4 +52,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

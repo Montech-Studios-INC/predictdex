@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import MarketCard from "./MarketCard";
 import CategoryFilter from "./CategoryFilter";
 import { MarketCardSkeleton } from "./Skeleton";
@@ -35,9 +35,9 @@ function MarketsBoard({
     offset,
   });
 
-  const handleCategoryChange = (category: string | null) => {
+  const handleCategoryChange = useCallback((category: string | null) => {
     setCategoryFilter(category as MarketCategory | null);
-  };
+  }, []);
 
   return (
     <section className="space-y-4 sm:space-y-6">

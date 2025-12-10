@@ -25,6 +25,17 @@ const MINIMUM_DEPOSITS: Record<string, { amount: number; usdEquivalent: string }
 type Tab = "balances" | "portfolio" | "deposit" | "withdraw" | "history";
 type WithdrawToken = "ETH" | "USDC" | "USDT";
 
+const TABS: { key: Tab; label: string }[] = [
+  { key: "balances", label: "Balances" },
+  { key: "portfolio", label: "Positions" },
+  { key: "deposit", label: "Deposit" },
+  { key: "withdraw", label: "Withdraw" },
+  { key: "history", label: "History" },
+];
+
+const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+const isValidEthAddress = (address: string): boolean => ETH_ADDRESS_REGEX.test(address);
+
 export default function WalletDashboard() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
@@ -74,25 +85,15 @@ export default function WalletDashboard() {
     );
   }
 
-  const tabs = useMemo(() => [
-    { key: "balances" as Tab, label: "Balances" },
-    { key: "portfolio" as Tab, label: "Positions" },
-    { key: "deposit" as Tab, label: "Deposit" },
-    { key: "withdraw" as Tab, label: "Withdraw" },
-    { key: "history" as Tab, label: "History" },
-  ], []);
-
   const getBalanceForToken = useCallback((token: string) => {
     const balance = balances.find(b => b.currency === token);
     return balance ? { available: balance.available, reserved: balance.reserved } : { available: 0, reserved: 0 };
   }, [balances]);
 
-  const feeRate = useMemo(() => withdrawLimits?.feeRate ?? 0.01, [withdrawLimits?.feeRate]);
-  const feePercentage = useMemo(() => withdrawLimits?.feePercentage ?? "1%", [withdrawLimits?.feePercentage]);
-  const calculateFee = useCallback((amount: number) => amount * feeRate, [feeRate]);
-  const calculateNet = useCallback((amount: number) => amount - calculateFee(amount), [calculateFee]);
-
-  const isValidEthAddress = useCallback((address: string) => /^0x[a-fA-F0-9]{40}$/.test(address), []);
+  const feeRate = withdrawLimits?.feeRate ?? 0.01;
+  const feePercentage = withdrawLimits?.feePercentage ?? "1%";
+  const calculateFee = (amount: number) => amount * feeRate;
+  const calculateNet = (amount: number) => amount - calculateFee(amount);
 
   const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
@@ -156,7 +157,7 @@ export default function WalletDashboard() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <div className="flex overflow-x-auto gap-2 sm:gap-3 text-xs uppercase tracking-[0.2em] sm:tracking-[0.35em] pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-        {tabs.map((tab) => (
+        {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}

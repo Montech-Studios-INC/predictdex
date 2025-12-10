@@ -2,34 +2,29 @@ import Link from "next/link";
 import { memo } from "react";
 import type { Market } from "@/lib/api/types";
 
+const formatVolume = (volume: number, symbol: string): string => {
+  if (volume >= 1000000) {
+    return `${symbol}${(volume / 1000000).toFixed(1)}M`;
+  }
+  if (volume >= 1000) {
+    return `${symbol}${(volume / 1000).toFixed(1)}K`;
+  }
+  return `${symbol}${volume.toFixed(0)}`;
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  open: "text-green-400",
+  closed: "text-yellow-400",
+  resolved: "text-blue-400",
+};
+
 type Props = {
   market: Market;
   compact?: boolean;
 };
 
 function MarketCard({ market, compact = false }: Props) {
-  const formatVolume = (volume: number, symbol: string): string => {
-    if (volume >= 1000000) {
-      return `${symbol}${(volume / 1000000).toFixed(1)}M`;
-    }
-    if (volume >= 1000) {
-      return `${symbol}${(volume / 1000).toFixed(1)}K`;
-    }
-    return `${symbol}${volume.toFixed(0)}`;
-  };
-
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "open":
-        return "text-green-400";
-      case "closed":
-        return "text-yellow-400";
-      case "resolved":
-        return "text-blue-400";
-      default:
-        return "text-mist";
-    }
-  };
+  const statusColor = STATUS_COLORS[market.status] ?? "text-mist";
 
   return (
     <Link
@@ -37,7 +32,7 @@ function MarketCard({ market, compact = false }: Props) {
       className="card-hover flex flex-col border border-white/5 bg-gradient-to-b from-charcoal/80 to-slate/60 px-4 sm:px-6 py-4 sm:py-5 transition min-h-[180px]"
     >
       <div className="mb-3 sm:mb-4 flex items-center justify-between text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-mist">
-        <span className={getStatusColor(market.status)}>{market.status}</span>
+        <span className={statusColor}>{market.status}</span>
         <span className="text-electric">{market.category}</span>
       </div>
       <h3 className="text-lg sm:text-xl font-semibold text-white line-clamp-2">{market.question}</h3>
