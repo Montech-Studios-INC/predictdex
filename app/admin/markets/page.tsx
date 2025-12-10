@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAdminMarkets } from "@/lib/hooks/useAdmin";
 import { useCountries } from "@/lib/hooks/useCountries";
 import { toast } from "@/components/Toast";
-import type { MarketStatus, MarketCategory, AdminMarketCreate, Country } from "@/lib/api/types";
+import type { MarketStatus, MarketCategory, AdminMarketCreate, AdminMarketUpdate, Country, Market } from "@/lib/api/types";
 
 const CATEGORIES: MarketCategory[] = ["Politics", "Civics", "Sports", "Culture"];
 const STATUSES: MarketStatus[] = ["draft", "open", "closed", "resolved"];
@@ -132,6 +132,21 @@ export default function AdminMarketsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {market.status === "draft" && (
+                    <button
+                      onClick={async () => {
+                        const success = await updateMarket(market.id, { status: "open" });
+                        if (success) {
+                          toast("Market launched successfully", "success");
+                        } else {
+                          toast("Failed to launch market", "error");
+                        }
+                      }}
+                      className="text-xs uppercase tracking-widest px-3 py-1 border border-green-500 text-green-400 hover:bg-green-500/10"
+                    >
+                      Launch
+                    </button>
+                  )}
                   {market.status === "closed" && (
                     <button
                       onClick={() => setResolvingMarket(market.id)}
@@ -183,6 +198,22 @@ export default function AdminMarketsPage() {
         <CreateMarketModal
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreate}
+        />
+      )}
+
+      {editingMarket && (
+        <EditMarketModal
+          market={markets?.find(m => m.id === editingMarket) || null}
+          onClose={() => setEditingMarket(null)}
+          onSubmit={async (data) => {
+            const success = await updateMarket(editingMarket, data);
+            if (success) {
+              toast("Market updated successfully", "success");
+              setEditingMarket(null);
+            } else {
+              toast(error || "Failed to update market", "error");
+            }
+          }}
         />
       )}
     </div>
@@ -389,6 +420,143 @@ function CreateMarketModal({
               className="flex-1 bg-gold text-midnight py-2 text-sm uppercase tracking-widest hover:bg-gold/90 disabled:opacity-50"
             >
               {isSubmitting ? "Creating..." : "Create Market"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-white/20 text-mist hover:text-white text-sm uppercase tracking-widest"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditMarketModal({
+  market,
+  onClose,
+  onSubmit,
+}: {
+  market: Market | null;
+  onClose: () => void;
+  onSubmit: (data: AdminMarketUpdate) => Promise<void>;
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<MarketStatus>("draft");
+  const [closesAt, setClosesAt] = useState("");
+  const [originalClosesAt, setOriginalClosesAt] = useState("");
+
+  // Helper to convert UTC ISO string to local datetime-local format
+  const toLocalDatetimeString = (isoString: string) => {
+    const date = new Date(isoString);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
+  // Re-sync form state when market changes
+  useEffect(() => {
+    if (market) {
+      setQuestion(market.question || "");
+      setDescription(market.description || "");
+      setStatus(market.status || "draft");
+      if (market.closesAt) {
+        const localStr = toLocalDatetimeString(market.closesAt);
+        setClosesAt(localStr);
+        setOriginalClosesAt(localStr);
+      } else {
+        setClosesAt("");
+        setOriginalClosesAt("");
+      }
+    }
+  }, [market?.id]);
+
+  if (!market) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const payload: AdminMarketUpdate = {};
+    if (question !== market.question) payload.question = question;
+    if (description !== (market.description || "")) payload.description = description;
+    if (status !== market.status) payload.status = status;
+    // Only update closesAt if it was actually changed
+    if (closesAt && closesAt !== originalClosesAt) {
+      // Convert local datetime-local value back to UTC ISO string
+      payload.closesAt = new Date(closesAt).toISOString();
+    }
+
+    await onSubmit(payload);
+    setIsSubmitting(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-charcoal border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-white/10">
+          <h2 className="text-lg font-semibold text-white">Edit Market</h2>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-mist mb-2">
+              Question
+            </label>
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 px-3 py-2 text-white focus:border-gold focus:outline-none"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-mist mb-2">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 px-3 py-2 text-white focus:border-gold focus:outline-none h-24"
+            />
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-mist mb-2">
+              Status
+            </label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as MarketStatus)}
+              className="w-full bg-white/5 border border-white/10 px-3 py-2 text-white focus:border-gold focus:outline-none"
+            >
+              <option value="draft">Draft</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-mist mb-2">
+              Closes At
+            </label>
+            <input
+              type="datetime-local"
+              value={closesAt}
+              onChange={(e) => setClosesAt(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 px-3 py-2 text-white focus:border-gold focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-3 pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-gold text-midnight py-2 text-sm uppercase tracking-widest hover:bg-gold/90 disabled:opacity-50"
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
             <button
               type="button"
