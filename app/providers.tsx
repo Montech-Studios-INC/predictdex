@@ -1,7 +1,8 @@
 "use client";
 
 import "@rainbow-me/rainbowkit/styles.css";
-import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultWallets, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { metaMaskWallet, walletConnectWallet, coinbaseWallet, rainbowWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useMemo } from "react";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
@@ -23,11 +24,17 @@ const { chains, publicClient } = configureChains(
   [publicProvider()],
 );
 
-const { connectors } = getDefaultWallets({
-  appName: "AfricaPredicts",
-  projectId,
-  chains,
-});
+const connectors = connectorsForWallets([
+  {
+    groupName: "Recommended",
+    wallets: [
+      metaMaskWallet({ projectId, chains }),
+      walletConnectWallet({ projectId, chains }),
+      coinbaseWallet({ appName: "AfricaPredicts", chains }),
+      rainbowWallet({ projectId, chains }),
+    ],
+  },
+]);
 
 const wagmiConfig = createConfig({
   autoConnect: true,
