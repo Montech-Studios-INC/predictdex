@@ -1,27 +1,33 @@
 "use client";
 
 import "@rainbow-me/rainbowkit/styles.css";
-import { RainbowKitProvider, getDefaultWallets, connectorsForWallets } from "@rainbow-me/rainbowkit";
-import { metaMaskWallet, walletConnectWallet, coinbaseWallet, rainbowWallet } from "@rainbow-me/rainbowkit/wallets";
+import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  metaMaskWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+  rainbowWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useMemo } from "react";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { arbitrum, bsc, mainnet, polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
-type Props = {
-  children: ReactNode;
-};
+const APP_NAME = "AfricaPredicts";
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || "";
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID;
 
 if (!projectId) {
-  console.warn("WalletConnect: NEXT_PUBLIC_WALLETCONNECT_ID not set. Wallet connections may fail.");
+  throw new Error(
+    "NEXT_PUBLIC_WALLETCONNECT_ID is required for wallet connections. " +
+    "Get one free at https://cloud.walletconnect.com/"
+  );
 }
 
 const { chains, publicClient } = configureChains(
   [mainnet, polygon, arbitrum, bsc],
-  [publicProvider()],
+  [publicProvider()]
 );
 
 const connectors = connectorsForWallets([
@@ -30,7 +36,7 @@ const connectors = connectorsForWallets([
     wallets: [
       metaMaskWallet({ projectId, chains }),
       walletConnectWallet({ projectId, chains }),
-      coinbaseWallet({ appName: "AfricaPredicts", chains }),
+      coinbaseWallet({ appName: APP_NAME, chains }),
       rainbowWallet({ projectId, chains }),
     ],
   },
@@ -42,7 +48,11 @@ const wagmiConfig = createConfig({
   publicClient,
 });
 
-export function Providers({ children }: Props) {
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+export function Providers({ children }: ProvidersProps) {
   const queryClient = useMemo(() => new QueryClient(), []);
 
   return (
@@ -53,4 +63,3 @@ export function Providers({ children }: Props) {
     </WagmiConfig>
   );
 }
-

@@ -132,6 +132,13 @@ AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application f
 4. POST /auth/wallet/verify with signature
 5. JWT token stored, user redirected to /markets
 
+### Mobile Wallet Support (December 10, 2025)
+- **Wallets:** MetaMask, WalletConnect, Coinbase Wallet, Rainbow
+- **Deep Linking:** MetaMask wallet configured with projectId for mobile deep linking
+- **Best Experience:** Open dApp URL in MetaMask's built-in browser
+- **Fallback:** WalletConnect QR code for any compatible wallet
+- **Required:** `NEXT_PUBLIC_WALLETCONNECT_ID` environment variable (get free at cloud.walletconnect.com)
+
 ## Error Handling
 - API errors displayed via Toast component
 - 401 errors trigger automatic logout and redirect to /login
