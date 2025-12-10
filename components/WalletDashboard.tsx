@@ -26,13 +26,25 @@ export default function WalletDashboard() {
   const { balances, isLoading: loadingBalances, refetch: refetchBalances } = useBalances();
   const { portfolio, isLoading: loadingPortfolio } = usePortfolio();
   const { transactions, isLoading: loadingTransactions } = useTransactions({ limit: 20 });
-  const { addresses, pending, isLoading: loadingDeposits } = useCryptoDeposits();
+  const { addresses, pending, isLoading: loadingDeposits, refetch: refetchDeposits } = useCryptoDeposits();
   const { prices, convertFromUsd, getPrice } = useCryptoPrices();
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedCurrency(null);
   }, [addresses]);
+
+  // Auto-refresh pending deposits every 30 seconds when on deposit tab
+  useEffect(() => {
+    if (activeTab !== "deposit") return;
+    
+    const interval = setInterval(() => {
+      refetchDeposits();
+      refetchBalances();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [activeTab, refetchDeposits, refetchBalances]);
 
   if (!isAuthenticated) {
     return (
@@ -216,13 +228,25 @@ export default function WalletDashboard() {
         <div className="border border-white/10 bg-charcoal/60 p-6">
           <div className="flex items-center justify-between mb-6">
             <p className="text-xs uppercase tracking-[0.4em] text-mist">Crypto Deposit Addresses</p>
-            {prices && (
-              <div className="flex items-center gap-4 text-xs text-mist">
-                <span>ETH: <span className="text-gold">${prices.ETH.toLocaleString()}</span></span>
-                <span>USDC: <span className="text-gold">${prices.USDC.toFixed(2)}</span></span>
-                <span>USDT: <span className="text-gold">${prices.USDT.toFixed(2)}</span></span>
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {prices && (
+                <div className="flex items-center gap-4 text-xs text-mist">
+                  <span>ETH: <span className="text-gold">${prices.ETH.toLocaleString()}</span></span>
+                  <span>USDC: <span className="text-gold">${prices.USDC.toFixed(2)}</span></span>
+                  <span>USDT: <span className="text-gold">${prices.USDT.toFixed(2)}</span></span>
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  refetchDeposits();
+                  refetchBalances();
+                  toast("Refreshing deposits...", "success");
+                }}
+                className="text-xs uppercase tracking-widest text-gold hover:text-white"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
           {loadingDeposits ? (
             <div className="space-y-4 animate-pulse">
