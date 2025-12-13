@@ -14,7 +14,9 @@ export default function CategoryFilter({ value, onChange, compact = false }: Pro
       <button
         onClick={() => onChange(null)}
         className={`border px-3 py-2 uppercase tracking-[0.35em] ${
-          value === null ? "border-gold text-gold" : "border-white/10 text-mist hover:text-white"
+          value === null
+            ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+            : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
         }`}
       >
         All
@@ -24,7 +26,9 @@ export default function CategoryFilter({ value, onChange, compact = false }: Pro
           key={category}
           onClick={() => onChange(category)}
           className={`border px-3 py-2 uppercase tracking-[0.35em] ${
-            value === category ? "border-electric text-white" : "border-white/10 text-mist hover:text-white"
+            value === category
+              ? "border-orange-400 bg-orange-50 text-orange-800"
+              : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
           }`}
         >
           {category}

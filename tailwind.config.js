@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require("tailwindcss/colors");
+
 module.exports = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -17,8 +20,8 @@ module.exports = {
         gold: "#E2B100",
         night: "#0A0A0A",
         charcoal: "#111111",
-        slate: "#1A1A1A",
         mist: "#B5B5B5",
+        slate: colors.slate,
       },
       backgroundImage: {
         "african-grid":
@@ -31,4 +34,3 @@ module.exports = {
   },
   plugins: [],
 };
-

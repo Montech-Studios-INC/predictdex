@@ -14,7 +14,9 @@ export default function CountryFilter({ value, onChange, compact = false }: Prop
       <button
         onClick={() => onChange(null)}
         className={`border px-3 py-2 uppercase tracking-[0.35em] ${
-          value === null ? "border-gold text-gold" : "border-white/10 text-mist hover:text-white"
+          value === null
+            ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+            : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
         }`}
       >
         All
@@ -24,7 +26,9 @@ export default function CountryFilter({ value, onChange, compact = false }: Prop
           key={country}
           onClick={() => onChange(country)}
           className={`border px-3 py-2 uppercase tracking-[0.35em] ${
-            value === country ? "border-royal text-white" : "border-white/10 text-mist hover:text-white"
+            value === country
+              ? "border-emerald-500 bg-emerald-100 text-emerald-800"
+              : "border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
           }`}
         >
           {country}

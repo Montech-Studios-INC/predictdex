@@ -51,8 +51,8 @@ export default function PredictionsBoard({
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-mist">{title}</p>
-        {description && <p className="mt-2 text-sm text-mist">{description}</p>}
+        <p className="text-xs uppercase tracking-[0.4em] text-orange-500">{title}</p>
+        {description && <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{description}</p>}
       </div>
 
       {showFilters && (
@@ -69,7 +69,7 @@ export default function PredictionsBoard({
       </div>
 
       {displayed.length === 0 && (
-        <p className="text-sm text-mist">No predictions match your filters yet.</p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">No predictions match your filters yet.</p>
       )}
     </section>
   );
