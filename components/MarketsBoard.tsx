@@ -13,8 +13,8 @@ type Props = {
   offset?: number;
   description?: string;
   showFilters?: boolean;
-  initialCategory?: MarketCategory | null;
-  initialCountry?: string | null;
+  category?: MarketCategory | null;
+  country?: string | null;
 };
 
 function MarketsBoard({
@@ -23,20 +23,20 @@ function MarketsBoard({
   offset = 0,
   description,
   showFilters = true,
-  initialCategory = null,
-  initialCountry = null,
+  category = null,
+  country = null,
 }: Props) {
-  const [categoryFilter, setCategoryFilter] = useState<MarketCategory | null>(initialCategory);
+  const [categoryFilter, setCategoryFilter] = useState<MarketCategory | null>(category);
 
   const { markets, isLoading, error } = useMarkets({
     category: categoryFilter,
-    country: initialCountry,
+    country,
     limit,
     offset,
   });
 
-  const handleCategoryChange = useCallback((category: string | null) => {
-    setCategoryFilter(category as MarketCategory | null);
+  const handleCategoryChange = useCallback((cat: string | null) => {
+    setCategoryFilter(cat as MarketCategory | null);
   }, []);
 
   return (

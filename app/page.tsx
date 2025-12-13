@@ -84,11 +84,26 @@ export default function HomePage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setSelectedCountry(null)}
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
+              selectedCountry === null
+                ? "border-orange-500 bg-orange-50 text-orange-700 dark:border-orange-400 dark:bg-orange-500/10 dark:text-orange-100"
+                : "border-neutral-200 bg-white text-neutral-900 hover:border-orange-400 hover:text-orange-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-orange-400"
+            }`}
+          >
+            <span>🌍</span>
+            <span>All Countries</span>
+          </button>
           {trendingCountries.map((country) => (
             <button
               key={country}
               onClick={() => setSelectedCountry(country)}
-              className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-900 shadow-sm transition hover:border-orange-400 hover:text-orange-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-orange-400"
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
+                selectedCountry === country
+                  ? "border-orange-500 bg-orange-50 text-orange-700 dark:border-orange-400 dark:bg-orange-500/10 dark:text-orange-100"
+                  : "border-neutral-200 bg-white text-neutral-900 shadow-sm hover:border-orange-400 hover:text-orange-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-orange-400"
+              }`}
             >
               <span>{countryFlag[country] ?? "🌍"}</span>
               <span>{country}</span>
@@ -125,12 +140,11 @@ export default function HomePage() {
       </section>
 
       <MarketsBoard
-        key={selectedCountry ?? "all"}
-        title="Top 10 Predictions in Africa"
+        title={selectedCountry ? `Markets in ${selectedCountry}` : "Top 10 Predictions in Africa"}
         description="Instantly trade trending narratives curated by our intelligence desk."
         limit={10}
         showFilters={false}
-        initialCountry={selectedCountry}
+        country={selectedCountry}
       />
     </div>
   );
