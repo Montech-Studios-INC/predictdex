@@ -6,21 +6,38 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 }
 
 body {
-  @apply bg-night text-white font-inter;
+  @apply bg-gray-50 text-slate-900 font-inter dark:bg-neutral-950 dark:text-white;
+  background-image: radial-gradient(circle at top, rgba(22, 45, 255, 0.06), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(226, 177, 0, 0.06), transparent 40%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)),
+    var(--pattern, none);
+  background-attachment: fixed;
   min-height: 100vh;
 }
 
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image: radial-gradient(circle at top, rgba(22, 45, 255, 0.08), transparent 55%),
+      radial-gradient(circle at 20% 20%, rgba(226, 177, 0, 0.08), transparent 40%);
+  }
+}
+
+.dark body {
+  background-image: radial-gradient(circle at top, rgba(22, 45, 255, 0.08), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(226, 177, 0, 0.08), transparent 40%);
+}
+
 .glass-panel {
-  @apply bg-charcoal/70 border border-white/10;
+  @apply bg-white/70 border border-neutral-200 dark:bg-neutral-900/70 dark:border-neutral-700;
   backdrop-filter: blur(22px);
 }
 
 .badge {
-  @apply uppercase tracking-widest text-[10px] font-semibold text-mist;
+  @apply uppercase tracking-widest text-[10px] font-semibold text-neutral-500 dark:text-neutral-400;
 }
 
 .card-hover {

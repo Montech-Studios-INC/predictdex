@@ -1,14 +1,14 @@
 # AfricaPredicts — Pan-African Prediction Exchange
 
 ## Overview
-AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application focused on African narratives. The app features predictions on politics, civics, sports, and culture across the continent. Built with a futuristic, pan-African dark theme aesthetic.
+AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application focused on African narratives. The app features predictions on politics, civics, sports, and culture across the continent. Built with a clean light theme with orange accents (dark mode also available).
 
 **Status:** Production Ready - Pre-deployment audit completed
-**Last Updated:** December 10, 2025
+**Last Updated:** December 13, 2025
 
 ## Tech Stack
 - **Framework:** Next.js 13 (App Router) + React 18
-- **Styling:** Tailwind CSS with custom pan-African theme (royal blue, gold, dark backgrounds)
+- **Styling:** Tailwind CSS with light/dark theme support (orange accents, neutral colors)
 - **State Management:** Zustand (auth store, toast notifications)
 - **Web3:** Wagmi + RainbowKit for wallet connectivity (MetaMask, WalletConnect)
 - **API:** Connected to NestJS backend at https://sa-api-server-1.replit.app/api/v1

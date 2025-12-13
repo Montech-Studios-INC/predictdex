@@ -42,8 +42,8 @@ function MarketsBoard({
   return (
     <section className="space-y-4 sm:space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-mist">{title}</p>
-        {description && <p className="mt-2 text-sm text-mist">{description}</p>}
+        <p className="text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-orange-500">{title}</p>
+        {description && <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{description}</p>}
       </div>
 
       {showFilters && (
@@ -59,12 +59,12 @@ function MarketsBoard({
           ))}
         </div>
       ) : error ? (
-        <div className="border border-red-500/20 bg-red-900/10 p-4 sm:p-6 text-center">
-          <p className="text-sm text-red-400">{error}</p>
-          <p className="mt-2 text-xs text-mist">Unable to load markets from the server</p>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-6 text-center dark:border-red-500/20 dark:bg-red-900/10">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Unable to load markets from the server</p>
         </div>
       ) : markets.length === 0 ? (
-        <p className="text-sm text-mist">No markets available for this filter.</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">No markets available for this filter.</p>
       ) : (
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {markets.map((market) => (
