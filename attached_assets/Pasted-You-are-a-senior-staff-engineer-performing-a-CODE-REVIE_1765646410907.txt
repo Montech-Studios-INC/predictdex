@@ -1,0 +1,74 @@
+You are a senior staff engineer performing a CODE REVIEW + AUDIT on the following code.
+
+Goals:
+- Find real problems, not just style nits.
+- Identify vulnerabilities, correctness issues, performance risks, and maintainability problems.
+- Propose specific fixes, not generic advice.
+
+Instructions:
+1. Start with a short summary
+   - In 2–3 sentences, explain what this code does and where it fits in a typical backend/frontend/API system.
+
+2. Correctness audit
+   - Identify logic bugs, incorrect assumptions, missing checks, and edge cases not handled.
+   - Call out any places where the code will likely throw, break, or behave unpredictably.
+   - For each issue, explain:
+     - What can go wrong
+     - Under what conditions
+     - How to fix it concretely
+
+3. Security & data protection audit
+   - Look for:
+     - missing auth/permission checks
+     - missing tenant/org scoping
+     - trust of user input without validation
+     - possible injection or data leakage
+     - logging of sensitive data
+   - For each potential vulnerability:
+     - Describe the risk
+     - Show an example exploit scenario
+     - Suggest specific mitigations or code changes
+
+4. Performance & scalability audit
+   - Identify:
+     - N+1 queries
+     - heavy loops or repeated work
+     - inefficient data structures
+     - unnecessary allocations or deep copies
+     - large payloads or over-fetching
+   - Suggest concrete optimizations:
+     - query changes, indexing, batching, caching, memoization, etc.
+
+5. Maintainability & structure
+   - Comment on:
+     - function/module size and responsibility
+     - naming clarity
+     - duplication
+     - coupling between modules
+   - Propose refactors that:
+     - reduce complexity
+     - improve readability
+     - make the code easier to test
+
+6. Testing recommendations
+   - List the most important tests that should exist for this code:
+     - happy-path tests
+     - edge-case tests
+     - failure-mode tests
+     - security/permission tests
+   - For each, describe:
+     - GIVEN / WHEN / THEN
+   - If useful, sketch example unit/integration tests in our likely stack (e.g., Jest, Supertest, Apollo test client, etc.).
+
+7. Priority & action list
+   - Classify findings as:
+     - CRITICAL (must fix now)
+     - HIGH
+     - MEDIUM
+     - LOW / NICE-TO-HAVE
+   - Produce a concise action list in order of importance, with specific changes a developer can make.
+
+Rules:
+- Be specific, not generic.
+- Point to exact patterns (e.g., “in the loop over users…”, “in the resolver X…”, “in the route Y…”).
+- If something is UNKNOWN because it depends on external code, state that clearly instead of guessing.
