@@ -52,7 +52,7 @@ function MarketCard({ market, compact = false }: Props) {
       </div>
       {!compact && (
         <div className="mt-4 sm:mt-6 flex items-center justify-between text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.35em] text-mist">
-          <span>Vol {formatVolume(market.volume, market.symbol)}</span>
+          <span>Vol {formatVolume(market.volume, market.symbol || '$')}</span>
           <span>
             {new Date(market.closesAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </span>

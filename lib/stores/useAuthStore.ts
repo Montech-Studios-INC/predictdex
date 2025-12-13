@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/lib/api/types';
 import apiClient from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/constants';
+
+let checkAuthInProgress = false;
 
 interface AuthState {
   user: User | null;
@@ -43,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({ 
             isLoading: false, 
-            error: error instanceof Error ? error.message : 'Failed to send OTP' 
+            error: getErrorMessage(error, 'Failed to send OTP') 
           });
           return false;
         }
@@ -63,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({ 
             isLoading: false, 
-            error: error instanceof Error ? error.message : 'Invalid OTP code' 
+            error: getErrorMessage(error, 'Invalid OTP code') 
           });
           return false;
         }
@@ -85,7 +88,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({ 
             isLoading: false, 
-            error: error instanceof Error ? error.message : 'Wallet login failed' 
+            error: getErrorMessage(error, 'Wallet login failed') 
           });
           return false;
         }
@@ -108,37 +111,44 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        let token = apiClient.getToken();
+        if (checkAuthInProgress) return;
+        checkAuthInProgress = true;
         
-        if (!token && typeof window !== 'undefined') {
-          token = localStorage.getItem('auth_token');
-          if (token) {
-            apiClient.setToken(token);
-          }
-        }
-        
-        if (!token) {
-          set({ user: null, isAuthenticated: false, isLoading: false, isAuthReady: true });
-          return;
-        }
-
-        set({ isLoading: true });
         try {
-          const response = await apiClient.getCurrentUser();
-          set({ 
-            user: response.user, 
-            isAuthenticated: true, 
-            isLoading: false,
-            isAuthReady: true
-          });
-        } catch (error) {
-          apiClient.setToken(null);
-          set({ 
-            user: null, 
-            isAuthenticated: false, 
-            isLoading: false,
-            isAuthReady: true
-          });
+          let token = apiClient.getToken();
+          
+          if (!token && typeof window !== 'undefined') {
+            token = localStorage.getItem('auth_token');
+            if (token) {
+              apiClient.setToken(token);
+            }
+          }
+          
+          if (!token) {
+            set({ user: null, isAuthenticated: false, isLoading: false, isAuthReady: true });
+            return;
+          }
+
+          set({ isLoading: true });
+          try {
+            const response = await apiClient.getCurrentUser();
+            set({ 
+              user: response.user, 
+              isAuthenticated: true, 
+              isLoading: false,
+              isAuthReady: true
+            });
+          } catch (error) {
+            apiClient.setToken(null);
+            set({ 
+              user: null, 
+              isAuthenticated: false, 
+              isLoading: false,
+              isAuthReady: true
+            });
+          }
+        } finally {
+          checkAuthInProgress = false;
         }
       },
     }),

@@ -42,6 +42,7 @@ const API_BASE_URL = 'https://sa-api-server-1.replit.app/api/v1';
 
 class ApiClient {
   private token: string | null = null;
+  private pendingRequests = new Map<string, Promise<unknown>>();
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -65,6 +66,29 @@ class ApiClient {
   }
 
   private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const method = options.method || 'GET';
+    const dedupeKey = method === 'GET' ? `${method}-${endpoint}` : null;
+
+    if (dedupeKey && this.pendingRequests.has(dedupeKey)) {
+      return this.pendingRequests.get(dedupeKey) as Promise<T>;
+    }
+
+    const requestPromise = this.executeRequest<T>(endpoint, options);
+    
+    if (dedupeKey) {
+      this.pendingRequests.set(dedupeKey, requestPromise);
+      requestPromise.finally(() => {
+        this.pendingRequests.delete(dedupeKey);
+      });
+    }
+
+    return requestPromise;
+  }
+
+  private async executeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {

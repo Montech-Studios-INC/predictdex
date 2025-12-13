@@ -4,10 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import apiClient from "@/lib/api/client";
 import { normalizeListResponse } from "@/lib/api/responseHelpers";
 import type { Market, MarketCategory, OrderBookResponse, TradesResponse } from "@/lib/api/types";
+import { CACHE_TTL_MS, ORDERBOOK_POLL_MS, DEFAULT_TRADES_LIMIT, getErrorMessage } from "@/lib/constants";
 
-// Simple in-memory cache with 30-second TTL
 const marketsCache = new Map<string, { data: Market[]; total: number; timestamp: number }>();
-const CACHE_TTL = 30 * 1000; // 30 seconds
 
 interface UseMarketsParams {
   category?: MarketCategory | null;
@@ -27,17 +26,25 @@ interface UseMarketsReturn {
 export function useMarkets({ category, country, limit = 20, offset = 0 }: UseMarketsParams = {}): UseMarketsReturn {
   const cacheKey = `${category || ''}-${country || ''}-${limit}-${offset}`;
   const cached = marketsCache.get(cacheKey);
-  const isFresh = cached && (Date.now() - cached.timestamp) < CACHE_TTL;
+  const isFresh = cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS;
   
   const [markets, setMarkets] = useState<Market[]>(isFresh ? cached.data : []);
   const [total, setTotal] = useState(isFresh ? cached.total : 0);
   const [isLoading, setIsLoading] = useState(!isFresh);
   const [error, setError] = useState<string | null>(null);
   const hasFetched = useRef(false);
+  const prevCacheKey = useRef(cacheKey);
+
+  useEffect(() => {
+    if (prevCacheKey.current !== cacheKey) {
+      hasFetched.current = false;
+      prevCacheKey.current = cacheKey;
+    }
+  }, [cacheKey]);
 
   const fetchMarkets = useCallback(async (force = false) => {
     const currentCache = marketsCache.get(cacheKey);
-    const stillFresh = currentCache && (Date.now() - currentCache.timestamp) < CACHE_TTL;
+    const stillFresh = currentCache && (Date.now() - currentCache.timestamp) < CACHE_TTL_MS;
     
     // Skip fetch if cache is fresh and not forced
     if (stillFresh && !force && hasFetched.current) {
@@ -69,7 +76,7 @@ export function useMarkets({ category, country, limit = 20, offset = 0 }: UseMar
       setMarkets(sorted);
       setTotal(totalCount);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load markets");
+      setError(getErrorMessage(err, "Failed to load markets"));
       setMarkets([]);
     } finally {
       setIsLoading(false);
@@ -102,7 +109,7 @@ export function useMarket(slug: string): UseMarketReturn {
       const response = await apiClient.getMarket(slug);
       setMarket(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load market");
+      setError(getErrorMessage(err, "Failed to load market"));
       setMarket(null);
     } finally {
       setIsLoading(false);
@@ -138,14 +145,14 @@ export function useOrderBook(slug: string): UseOrderBookReturn {
         const response = await apiClient.getOrderBook(slug);
         setOrderbook(response);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load orderbook");
+        setError(getErrorMessage(err, "Failed to load orderbook"));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchOrderBook();
-    const interval = setInterval(fetchOrderBook, 10000);
+    const interval = setInterval(fetchOrderBook, ORDERBOOK_POLL_MS);
     return () => clearInterval(interval);
   }, [slug]);
 
@@ -172,7 +179,7 @@ export function useMarketTrades(slug: string, limit = 50): UseMarketTradesReturn
         const response = await apiClient.getMarketTrades(slug, limit);
         setTrades(response);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load trades");
+        setError(getErrorMessage(err, "Failed to load trades"));
       } finally {
         setIsLoading(false);
       }

@@ -10,17 +10,12 @@ import { toast } from "./Toast";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { WithdrawalRequest } from "@/lib/api/types";
+import { MINIMUM_DEPOSITS, DEPOSIT_POLL_MS, isValidEthAddress } from "@/lib/constants";
 
 const QRCodeSVG = dynamic(() => import("qrcode.react").then(mod => ({ default: mod.QRCodeSVG })), {
   loading: () => <div className="w-48 h-48 bg-white/10 animate-pulse" />,
   ssr: false,
 });
-
-const MINIMUM_DEPOSITS: Record<string, { amount: number; usdEquivalent: string }> = {
-  ETH: { amount: 0.001, usdEquivalent: "~$3.50" },
-  USDC: { amount: 5, usdEquivalent: "$5.00" },
-  USDT: { amount: 5, usdEquivalent: "$5.00" },
-};
 
 type Tab = "balances" | "portfolio" | "deposit" | "withdraw" | "history";
 type WithdrawToken = "ETH" | "USDC" | "USDT";
@@ -32,9 +27,6 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "withdraw", label: "Withdraw" },
   { key: "history", label: "History" },
 ];
-
-const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-const isValidEthAddress = (address: string): boolean => ETH_ADDRESS_REGEX.test(address);
 
 export default function WalletDashboard() {
   const router = useRouter();
@@ -65,7 +57,7 @@ export default function WalletDashboard() {
     const interval = setInterval(() => {
       refetchDeposits();
       refetchBalances();
-    }, 30000);
+    }, DEPOSIT_POLL_MS);
     
     return () => clearInterval(interval);
   }, [activeTab, refetchDeposits, refetchBalances]);
