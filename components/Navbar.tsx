@@ -81,12 +81,12 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur shadow-sm dark:border-neutral-800 dark:bg-neutral-950/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-12">
-        <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+        <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 flex-shrink-0">
           <Image src="/africapredicts/logo-africapredicts.svg" alt="AfricaPredicts" width={40} height={40} />
-          <p className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white">AfricaPredicts</p>
+          <p className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-white hidden sm:block">AfricaPredicts</p>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm uppercase tracking-[0.25em] lg:flex">
+        <nav className="hidden items-center gap-4 xl:gap-6 text-sm uppercase tracking-[0.15em] xl:tracking-[0.25em] lg:flex ml-8">
           {visibleLinks.map((link) => {
             const isActive = pathname.startsWith(link.href);
             return (
