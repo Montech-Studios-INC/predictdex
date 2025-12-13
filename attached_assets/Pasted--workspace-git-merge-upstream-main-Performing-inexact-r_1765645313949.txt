@@ -1,0 +1,34 @@
+~/workspace$ git merge upstream/main
+Performing inexact rename detection:        
+  100% (565/565), done.
+Auto-merging app/account/page.tsx
+CONFLICT (content): Merge conflict in app/account/page.tsx
+Auto-merging app/category/[category]/page.tsx
+CONFLICT (content): Merge conflict in app/category/[category]/page.tsx
+Auto-merging app/country/[country]/page.tsx
+CONFLICT (content): Merge conflict in app/country/[country]/page.tsx
+Auto-merging app/globals.css
+Auto-merging app/layout.tsx
+CONFLICT (content): Merge conflict in app/layout.tsx
+Auto-merging app/markets/page.tsx
+CONFLICT (content): Merge conflict in app/markets/page.tsx
+Auto-merging app/page.tsx
+CONFLICT (content): Merge conflict in app/page.tsx
+Auto-merging components/CategoryFilter.tsx
+CONFLICT (content): Merge conflict in components/CategoryFilter.tsx
+Auto-merging components/ChartBox.tsx
+CONFLICT (content): Merge conflict in components/ChartBox.tsx
+CONFLICT (modify/delete): components/CountryFilter.tsx deleted in HEAD and modified in upstream/main.  Version upstream/main of components/CountryFilter.tsx left in tree.
+Auto-merging components/Navbar.tsx
+CONFLICT (content): Merge conflict in components/Navbar.tsx
+CONFLICT (modify/delete): components/OrderBookPanel.tsx deleted in HEAD and modified in upstream/main.  Version upstream/main of components/OrderBookPanel.tsx left in tree.
+CONFLICT (modify/delete): components/PredictionCard.tsx deleted in HEAD and modified in upstream/main.  Version upstream/main of components/PredictionCard.tsx left in tree.
+CONFLICT (modify/delete): components/PredictionDetail.tsx deleted in HEAD and modified in upstream/main.  Version upstream/main of components/PredictionDetail.tsx left in tree.
+CONFLICT (modify/delete): components/PredictionsBoard.tsx deleted in HEAD and modified in upstream/main.  Version upstream/main of components/PredictionsBoard.tsx left in tree.
+Auto-merging components/WalletDashboard.tsx
+CONFLICT (content): Merge conflict in components/WalletDashboard.tsx
+Auto-merging package-lock.json
+CONFLICT (content): Merge conflict in package-lock.json
+Auto-merging package.json
+CONFLICT (content): Merge conflict in package.json
+Automatic merge failed; fix conflicts and then commit the result.

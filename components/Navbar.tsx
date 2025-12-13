@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 const links = [
@@ -12,6 +13,27 @@ const links = [
   { href: "/wallet", label: "Wallet", protected: true },
   { href: "/account", label: "Account", protected: true },
 ];
+
+function ThemeToggle() {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const activeTheme = theme === "system" ? resolvedTheme : theme;
+  const nextTheme = activeTheme === "dark" ? "light" : "dark";
+
+  if (!mounted) return null;
+
+  return (
+    <button
+      onClick={() => setTheme(nextTheme)}
+      className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium text-mist hover:bg-white/10 transition-colors"
+    >
+      {activeTheme === "dark" ? "Light" : "Dark"}
+    </button>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -76,7 +98,9 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`px-2 py-1 ${
-                  isActive ? "text-gold" : "text-mist hover:text-white"
+                  isActive
+                    ? "text-gold"
+                    : "text-mist hover:text-white"
                 } transition-colors`}
               >
                 {link.label}
@@ -86,6 +110,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <ThemeToggle />
           <div className="hidden sm:flex items-center gap-4">
             {isAuthenticated ? (
               <div className="flex items-center gap-4">

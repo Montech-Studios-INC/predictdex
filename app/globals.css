@@ -11,16 +11,11 @@
 
 body {
   @apply bg-night text-white font-inter;
-  background-image: radial-gradient(circle at top, rgba(22, 45, 255, 0.12), transparent 55%),
-    radial-gradient(circle at 20% 20%, rgba(226, 177, 0, 0.08), transparent 40%),
-    linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(17, 17, 17, 0.95)),
-    var(--pattern, none);
-  background-attachment: fixed;
   min-height: 100vh;
 }
 
 .glass-panel {
-  @apply bg-slate/40 border border-white/5;
+  @apply bg-charcoal/70 border border-white/10;
   backdrop-filter: blur(22px);
 }
 
