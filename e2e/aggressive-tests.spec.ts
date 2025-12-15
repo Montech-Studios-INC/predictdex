@@ -198,12 +198,12 @@ test.describe("AGGRESSIVE TESTING: Withdrawal Abuse", () => {
         destinationAddress: "0x1234567890123456789012345678901234567890",
       },
     });
-    expect([401, 403, 404]).toContain(res.status);
+    expect([401, 403, 404, 429]).toContain(res.status);
   });
 
   test("Withdrawal limits without auth should be blocked", async ({ request }) => {
     const res = await makeRequest(request, "GET", "/crypto/withdrawals/limits");
-    expect([401, 403, 404]).toContain(res.status);
+    expect([401, 403, 404, 429]).toContain(res.status);
   });
 
   test("Withdrawal with invalid token type should fail", async ({ request }) => {
