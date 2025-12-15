@@ -4,6 +4,18 @@ export const DEPOSIT_POLL_MS = 30_000;
 export const DEFAULT_PAGE_LIMIT = 20;
 export const DEFAULT_TRADES_LIMIT = 50;
 
+export const PORTFOLIO_DEFAULTS = {
+  limit: 50,
+  maxLimit: 100,
+  maxOffset: 10_000,
+} as const;
+
+export const PORTFOLIO_HISTORY_DEFAULTS = {
+  limit: 20,
+  maxLimit: 100,
+  maxOffset: 10_000,
+} as const;
+
 export const MINIMUM_DEPOSITS: Record<string, { amount: number; usdEquivalent: string }> = {
   ETH: { amount: 0.001, usdEquivalent: "~$3.50" },
   USDC: { amount: 5, usdEquivalent: "$5.00" },
