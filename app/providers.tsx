@@ -9,18 +9,18 @@ import {
   rainbowWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useEffect, useState } from "react";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { arbitrum, bsc, mainnet, polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
 const APP_NAME = "AfricaPredicts";
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID;
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || "ad5430505e81b8a112c85ab079f48f18";
 
 if (!projectId) {
-  throw new Error(
-    "NEXT_PUBLIC_WALLETCONNECT_ID is required for wallet connections. " +
+  console.warn(
+    "NEXT_PUBLIC_WALLETCONNECT_ID is not set. " +
     "Get one free at https://cloud.walletconnect.com/"
   );
 }
@@ -53,12 +53,26 @@ type ProvidersProps = {
 };
 
 export function Providers({ children }: ProvidersProps) {
-  const queryClient = useMemo(() => new QueryClient(), []);
+  const queryClient = useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }), []);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <WagmiConfig config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+        <RainbowKitProvider chains={chains} modalSize="compact">
+          {mounted ? children : null}
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiConfig>
   );
