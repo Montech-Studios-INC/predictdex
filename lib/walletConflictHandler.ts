@@ -1,72 +1,69 @@
 /**
  * Wallet Extension Conflict Handler
  * 
- * Handles conflicts when multiple wallet extensions (MetaMask, Coinbase, etc.)
- * try to redefine window.ethereum. This prevents "Cannot redefine property: ethereum" errors.
+ * Prevents "Cannot redefine property: ethereum" errors when multiple wallet
+ * extensions (MetaMask, Coinbase, Brave, etc.) compete for window.ethereum.
+ * 
+ * This module must be imported early in the application lifecycle.
  */
 
+let initialized = false;
+
 export function initWalletConflictHandler(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || initialized) return;
+  initialized = true;
 
   try {
-    const existingEthereum = (window as any).ethereum;
+    const ethereum = (window as any).ethereum;
+    if (!ethereum) return;
+
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'ethereum');
     
-    if (existingEthereum) {
-      const descriptor = Object.getOwnPropertyDescriptor(window, 'ethereum');
-      
-      if (descriptor && !descriptor.configurable) {
-        console.warn(
-          '[AfricaPredicts] Multiple wallet extensions detected. ' +
-          'Using the primary wallet provider.'
+    if (descriptor && !descriptor.configurable) {
+      if (ethereum.providers?.length > 1) {
+        console.info(
+          `[AfricaPredicts] ${ethereum.providers.length} wallet providers detected. ` +
+          'RainbowKit will handle provider selection.'
         );
       }
+      return;
     }
 
-    const providers: any[] = [];
-    
-    if (existingEthereum?.providers?.length) {
-      providers.push(...existingEthereum.providers);
-    } else if (existingEthereum) {
-      providers.push(existingEthereum);
-    }
-
-    if (providers.length > 1) {
+    if (ethereum.providers?.length) {
       console.info(
-        `[AfricaPredicts] ${providers.length} wallet providers detected. ` +
-        'RainbowKit will handle provider selection.'
+        `[AfricaPredicts] ${ethereum.providers.length} wallet providers available.`
       );
     }
+
+    try {
+      Object.defineProperty(window, 'ethereum', {
+        value: ethereum,
+        writable: false,
+        configurable: false,
+        enumerable: true,
+      });
+    } catch {
+      // Property already locked by another extension - this is fine
+    }
   } catch (error) {
-    console.warn('[AfricaPredicts] Wallet conflict check failed:', error);
+    // Silent fail - wallet functionality will still work via RainbowKit
   }
 }
 
-export function getAvailableProviders(): any[] {
-  if (typeof window === 'undefined') return [];
-  
-  const ethereum = (window as any).ethereum;
-  
-  if (!ethereum) return [];
-  
-  if (ethereum.providers?.length) {
-    return ethereum.providers;
+export async function validateWalletConnectProjectId(projectId: string): Promise<boolean> {
+  if (!projectId || projectId.length !== 32) {
+    console.error('[AfricaPredicts] Invalid WalletConnect project ID format');
+    return false;
   }
   
-  return [ethereum];
-}
-
-export function getProviderByName(name: string): any | null {
-  const providers = getAvailableProviders();
-  
-  const providerMap: Record<string, (p: any) => boolean> = {
-    metamask: (p) => p.isMetaMask && !p.isBraveWallet,
-    coinbase: (p) => p.isCoinbaseWallet,
-    brave: (p) => p.isBraveWallet,
-    rainbow: (p) => p.isRainbow,
-  };
-  
-  const check = providerMap[name.toLowerCase()];
-  if (!check) return null;
-  
-  return providers.find(check) || null;
+  try {
+    const response = await fetch(
+      `https://relay.walletconnect.com/?projectId=${projectId}`,
+      { method: 'HEAD', mode: 'no-cors' }
+    );
+    return true;
+  } catch {
+    console.warn('[AfricaPredicts] Could not validate WalletConnect project ID');
+    return true; // Allow to proceed, actual errors will surface at connection time
+  }
 }

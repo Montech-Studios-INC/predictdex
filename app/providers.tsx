@@ -13,7 +13,7 @@ import { ReactNode, useMemo, useEffect } from "react";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { arbitrum, bsc, mainnet, polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
-import { initWalletConflictHandler } from "@/lib/walletConflictHandler";
+import { initWalletConflictHandler, validateWalletConnectProjectId } from "@/lib/walletConflictHandler";
 
 const APP_NAME = "AfricaPredicts";
 
@@ -23,6 +23,13 @@ if (!projectId) {
   throw new Error(
     "NEXT_PUBLIC_WALLETCONNECT_ID is required for wallet connections. " +
     "Get one free at https://cloud.walletconnect.com/"
+  );
+}
+
+if (projectId.length !== 32) {
+  console.error(
+    "[AfricaPredicts] WalletConnect project ID appears invalid. " +
+    "Expected 32-character hex string."
   );
 }
 
