@@ -3,8 +3,8 @@
 ## Overview
 AfricaPredicts is a Next.js 13 (App Router) Web3 prediction market application focused on African narratives. The app features predictions on politics, civics, sports, and culture across the continent. Built with a clean light theme with orange accents (dark mode also available).
 
-**Status:** Production Ready - Pre-deployment audit completed
-**Last Updated:** December 13, 2025
+**Status:** Production Ready - WalletConnect fixes applied
+**Last Updated:** December 15, 2025
 
 ## Tech Stack
 - **Framework:** Next.js 13 (App Router) + React 18

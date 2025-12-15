@@ -9,10 +9,11 @@ import {
   rainbowWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useEffect } from "react";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { arbitrum, bsc, mainnet, polygon } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
+import { initWalletConflictHandler } from "@/lib/walletConflictHandler";
 
 const APP_NAME = "AfricaPredicts";
 
@@ -54,6 +55,10 @@ type ProvidersProps = {
 
 export function Providers({ children }: ProvidersProps) {
   const queryClient = useMemo(() => new QueryClient(), []);
+
+  useEffect(() => {
+    initWalletConflictHandler();
+  }, []);
 
   return (
     <WagmiConfig config={wagmiConfig}>
