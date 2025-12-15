@@ -10,7 +10,38 @@ const nextConfig = {
   swcMinify: true,
   
   // Security headers including CSP
+  // Note: 'unsafe-inline' required for Next.js inline scripts
+  // 'unsafe-eval' required for RainbowKit/WalletConnect WASM in development
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    
+    // WalletConnect domains for Web3 connectivity
+    const walletConnectDomains = [
+      'https://*.walletconnect.com',
+      'https://*.walletconnect.org',
+      'wss://*.walletconnect.com',
+      'wss://*.walletconnect.org',
+      'https://relay.walletconnect.com',
+      'https://relay.walletconnect.org',
+      'wss://relay.walletconnect.com',
+      'wss://relay.walletconnect.org',
+      'https://verify.walletconnect.com',
+      'https://verify.walletconnect.org',
+      'https://rpc.walletconnect.com',
+      'https://pulse.walletconnect.com',
+      'https://explorer-api.walletconnect.com',
+      'https://keys.walletconnect.com',
+    ].join(' ');
+    
+    // Coinbase Wallet (WalletLink) domains
+    const walletLinkDomains = 'https://*.walletlink.org wss://*.walletlink.org';
+    
+    // RPC provider domains
+    const rpcDomains = 'https://*.infura.io https://*.alchemy.com wss://*.infura.io wss://*.alchemy.com';
+    
+    // API domains
+    const apiDomains = 'https://sa-api-server-1.replit.app https://api.coingecko.com';
+    
     return [
       {
         source: '/:path*',
@@ -19,11 +50,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.walletconnect.com https://*.walletconnect.org",
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://*.walletconnect.com https://*.walletconnect.org`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://sa-api-server-1.replit.app https://*.walletconnect.com https://*.walletconnect.org https://relay.walletconnect.com https://relay.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org wss://relay.walletconnect.com wss://relay.walletconnect.org https://verify.walletconnect.com https://verify.walletconnect.org https://api.coingecko.com https://*.infura.io https://*.alchemy.com wss://*.infura.io wss://*.alchemy.com https://rpc.walletconnect.com https://pulse.walletconnect.com https://explorer-api.walletconnect.com https://keys.walletconnect.com https://*.walletlink.org wss://*.walletlink.org https://www.walletlink.org wss://www.walletlink.org",
+              `connect-src 'self' ${apiDomains} ${walletConnectDomains} ${walletLinkDomains} ${rpcDomains}`,
               "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://verify.walletconnect.com https://verify.walletconnect.org",
               "frame-ancestors 'self' https://*.replit.dev https://*.repl.co https://*.africapredicts.com https://africapredicts.com",
             ].join('; '),
